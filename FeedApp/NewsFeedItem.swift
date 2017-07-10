@@ -19,6 +19,7 @@ struct NewsFeedItem {
     var webUrl:             String
     let apiUrl:             String
     let isHosted:           Bool
+    let thumbnail:          String
     
     init(with data: [String: Any]) {
         
@@ -31,7 +32,9 @@ struct NewsFeedItem {
         webUrl              = data["webUrl"]             as? String ?? ""
         apiUrl              = data["apiUrl"]             as? String ?? ""
         isHosted            = data["isHosted"]           as? Bool   ?? false
-
+        let filelds  = data["fields"] as? [String: Any]
+        thumbnail    = filelds?["thumbnail"] as? String ?? ""
+    
     }
     
 }

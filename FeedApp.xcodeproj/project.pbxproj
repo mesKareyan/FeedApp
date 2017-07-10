@@ -125,6 +125,7 @@
 		B276DA721F1360CD005093BD /* Objects */ = {
 			isa = PBXGroup;
 			children = (
+				B276DA5A1F134971005093BD /* FeedApp.xcdatamodeld */,
 				B276DA6E1F13608F005093BD /* NewsFeedItem.swift */,
 			);
 			name = Objects;
@@ -144,7 +145,6 @@
 			children = (
 				B276DA5F1F134971005093BD /* LaunchScreen.storyboard */,
 				B276DA621F134971005093BD /* Info.plist */,
-				B276DA5A1F134971005093BD /* FeedApp.xcdatamodeld */,
 			);
 			name = SupportingFiles;
 			sourceTree = "<group>";

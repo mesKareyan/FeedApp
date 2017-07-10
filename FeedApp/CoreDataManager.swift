@@ -39,14 +39,23 @@ class CoreDataManager {
             return
         }
         
-        let newsEntity = NewsFeedEntity(context: context)
+        let newsFeedEntity = NewsFeedEntity(context: context)
                 
-        newsEntity.date       = newsItem.webPublicationDate.shortNSDate
-        newsEntity.id         = newsItem.id
-        newsEntity.isRead     = false
-        newsEntity.title      = newsItem.webTitle
-        newsEntity.url        = newsItem.webUrl
-        newsEntity.category   = newsItem.sectionName
+        newsFeedEntity.date       = newsItem.webPublicationDate.shortNSDate
+        newsFeedEntity.id         = newsItem.id
+        newsFeedEntity.isRead     = false
+        newsFeedEntity.title      = newsItem.webTitle
+        newsFeedEntity.url        = newsItem.webUrl
+        newsFeedEntity.category   = newsItem.sectionName
+        newsFeedEntity.date       = newsItem.webPublicationDate.shortNSDate
+        newsFeedEntity.thumbnail  = newsItem.thumbnail
+        
+        let newsEntity      = NewsItemEntity(context: context)
+        newsEntity.id       = newsItem.id
+        newsEntity.apiURL   = newsItem.apiUrl
+        newsEntity.webURL   = newsItem.webUrl
+        newsEntity.feedItem = newsFeedEntity
+        
         // Save the context.
         do {
             try context.save()

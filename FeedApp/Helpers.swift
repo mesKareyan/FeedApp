@@ -30,10 +30,12 @@ extension NSDate {
 extension String {
     
     var shortDate: Date? {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "EEE, dd MMM yyyy hh:mm:ss +zzzz"
-        dateFormatter.locale = Locale(identifier: "en_GB")
-        let dateObj = dateFormatter.date(from: self)
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate,
+                                   .withTime,
+                                   .withDashSeparatorInDate,
+                                   .withColonSeparatorInTime]
+        let dateObj = formatter.date(from: self)
         return dateObj
     }
     

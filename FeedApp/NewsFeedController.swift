@@ -46,8 +46,14 @@ class NewsFeedController: UITableViewController {
         loadNews()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        UIView.animate(withDuration: 0.4, delay: 0.0, options: .curveEaseOut, animations:
+            {
+                self.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.red]
+                self.navigationController?.navigationBar.barTintColor = UIColor.white
+                self.navigationController?.navigationBar.barStyle = .default
+        }, completion: nil)
     }
     
     func loadNews() {
@@ -90,7 +96,7 @@ class NewsFeedController: UITableViewController {
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.managedObjectContext!, sectionNameKeyPath:nil, cacheName: nil)
         
         fetchedResultsController.delegate = self
-    
+        
         do {
             try fetchedResultsController.performFetch()
         } catch {
@@ -106,8 +112,8 @@ class NewsFeedController: UITableViewController {
             if let indexPath = tableView.indexPathForSelectedRow {
                 let newsObject = fetchedResultsController.object(at: indexPath)
                 CoreDataManager.shared.makeNewsRead(news: newsObject)
-                let controller = (segue.destination as! UINavigationController).topViewController as! NewsDetailViewController
-                //controller.newsItem = newsObject
+                let controller = segue.destination as! NewsDetailViewController
+                controller.newsFeedItem = newsObject
                 controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
                 controller.navigationItem.leftItemsSupplementBackButton = true
             }
@@ -179,8 +185,15 @@ extension NewsFeedController  {
     
     func configureCell(_ cell: UITableViewCell, withNews newsEntity: NewsFeedEntity) {
         if let cell = cell as? FeedTableCell {
-            cell.topLabel.text = newsEntity.category
+            cell.topLabel.text      = newsEntity.category
             cell.detailsLabel.text  = newsEntity.title
+            cell.dateLabel.text     = newsEntity.date?.shortString
+            if let urlString = newsEntity.thumbnail,
+                !urlString.isEmpty
+            {
+                let url = URL(string: urlString)!
+                cell.thumbnailImageView.hnk_setImageFromURL(url)
+            }
         }
     }
 }

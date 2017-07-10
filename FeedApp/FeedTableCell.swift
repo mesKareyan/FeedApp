@@ -14,13 +14,7 @@ class FeedTableCell: UITableViewCell {
     @IBOutlet weak var thumbnailImageView: UIImageView!
     @IBOutlet weak var topLabel: UILabel!
     @IBOutlet weak var detailsLabel: UILabel!
-    
-    @IBOutlet weak var containerViewHeightConstant: NSLayoutConstraint!
-    
-    var containerViewHeight: CGFloat {
-        let x = topLabel.bounds.height + detailsLabel.bounds.height
-        return max(x, thumbnailImageView.bounds.height)
-    }
+    @IBOutlet weak var dateLabel: UILabel!
     
     override func awakeFromNib() {
         super.awakeFromNib()

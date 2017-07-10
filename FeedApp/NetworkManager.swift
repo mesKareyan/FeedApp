@@ -25,7 +25,10 @@ class NetworkManager {
     private struct Constants {
         private init() {}
         private static let apiKey = "1e955f6d-31eb-436c-aab7-d710fbbec527"
-        private static let apiURLString = "https://content.guardianapis.com/search?api-key=" + apiKey
+        private static let apiURLString =
+            "https://content.guardianapis.com/search?api-key=" +
+                apiKey +
+                "&show-fields=thumbnail"
         static let apiURL = URL(string: apiURLString)!
     }
     
