@@ -17,25 +17,79 @@ enum InternalError: Error {
     case badResponse
 }
 
+extension URL {
+    
+    init?(string: String, queryParameters: [String : String]) {
+         self.init(string: string)
+        //params
+        guard var urlComponents = URLComponents(string: string) else {
+            return nil
+        }
+        urlComponents.queryItems = queryParameters.map {
+            component in URLQueryItem(name: component.key, value: component.value)
+        }
+        if let url = urlComponents.url {
+            self = url
+        }
+    }
+    
+}
+
 class NetworkManager {
     
     static let shared = NetworkManager()
     private init () {}
     
-    private struct Constants {
+    private struct API {
+        
         private init() {}
+        
         private static let apiKey = "1e955f6d-31eb-436c-aab7-d710fbbec527"
-        private static let apiURLString =
-            "https://content.guardianapis.com/search?api-key=" +
-                apiKey +
-                "&show-fields=thumbnail"
-        static let apiURL = URL(string: apiURLString)!
+        private static let base = "https://content.guardianapis.com/search"
+        //?api-key=" +
+              //  apiKey +
+               // "&show-fields=thumbnail"
+        static let  urlForNewestNews = URL(string: base,
+                                           queryParameters: ["api-key"   : apiKey,
+                                                             "page-size" : String(Constants.newsPageCount)])!
+        
+        static func urlFor(page: Int) -> URL {
+            let urlForNews = URL(string: base,
+                                 queryParameters: ["api-key"   : apiKey,
+                                                   "page"      : String(page),
+                                                   "page-size" : String(Constants.newsPageCount)])!
+            return urlForNews
+        }
+        
+        
     }
     
     typealias NetworkRequestCompletion = (RequestResult) -> ()
     
-    func getNews(completion: @escaping NetworkRequestCompletion) {
-        var request = URLRequest(url: Constants.apiURL)
+    func getNewestNews(completion: @escaping NetworkRequestCompletion) {
+        var request = URLRequest(url: API.urlForNewestNews)
+        request.httpMethod = "GET"
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard error == nil else {
+                DispatchQueue.main.async {
+                    completion(.fail(with: error!))
+                }
+                return
+            }
+            guard let data = data else {
+                DispatchQueue.main.async {
+                    completion(.fail(with: InternalError.badResponse))
+                }
+                return
+            }
+            let result = ApiRequestSerialization.resultFor(response: response, data: data)
+            completion(result)
+        }
+        task.resume()
+    }
+    
+    func getNews(atPage page: Int, completion: @escaping NetworkRequestCompletion) {
+        var request = URLRequest(url: API.urlFor(page: page))
         request.httpMethod = "GET"
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard error == nil else {

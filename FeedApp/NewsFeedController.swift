@@ -12,38 +12,30 @@ import CoreData
 import Haneke
 import SVProgressHUD
 
-struct Constants {
-    
-    private init () {}
-    enum Segues : String {
-        case  showDetail
-    }
-    struct CellIdentifer {
-        private init () {}
-        static let newsCell = "newsCell"
-    }
-    struct AnimationDuration {
-        private init() {}
-        static let showFirstItemForIPad: TimeInterval = 0.4
-    }
-    
-}
-
 class NewsFeedController: UITableViewController {
     
-    var detailViewController: NewsDetailViewController? = nil
     var managedObjectContext: NSManagedObjectContext? = nil
     var fetchedResultsController: NSFetchedResultsController<NewsFeedEntity>! = nil
     
+    var loadingInProgress = false
+    
     //MARK: - View controller life cycle
+    
     override func viewDidLoad() {
+        
         super.viewDidLoad()
+        
+        (tableView as UIScrollView).delegate = self
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 140
+        
         self.initializeFetchedResultsController()
+        
         //add table view refresh control action
+        
         self.refreshControl?.addTarget(self, action: #selector(self.handleRefresh(refreshControl:)), for: UIControlEvents.valueChanged)
-        loadNews()
+        loadNews(showHUD: true)
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -56,9 +48,9 @@ class NewsFeedController: UITableViewController {
         }, completion: nil)
     }
     
-    func loadNews() {
+    func loadNews(showHUD: Bool = false) {
         SVProgressHUD.show()
-        NetworkManager.shared.getNews { result in
+        NetworkManager.shared.getNewestNews { result in
             SVProgressHUD.dismiss()
             switch result {
             case .fail(with: let error):
@@ -66,6 +58,27 @@ class NewsFeedController: UITableViewController {
             case .success(with: let data):
                 let news = data as! [NewsFeedItem]
                 CoreDataManager.shared.saveNews(items: news)
+            }
+       }
+    }
+    
+    func loadNewFromNextPage() {
+        guard !loadingInProgress else {
+            return
+        }
+        loadingInProgress = true
+        let page = tableView.numberOfRows(inSection: 0) / Constants.newsPageCount + 1
+        title = "Loading page \(page) index \(index) count\(tableView.numberOfRows(inSection: 0))"
+        SVProgressHUD.show()
+        NetworkManager.shared.getNews(atPage: page) { result in
+            SVProgressHUD.dismiss()
+            switch result {
+            case .fail(with: let error):
+                self.showAlert(for: error)
+            case .success(with: let data):
+                let news = data as! [NewsFeedItem]
+                CoreDataManager.shared.saveNews(items: news)
+                self.loadingInProgress = false
             }
         }
     }
@@ -125,10 +138,26 @@ class NewsFeedController: UITableViewController {
 
 extension NewsFeedController  {
     
+    func configureCell(_ cell: UITableViewCell, withNews newsEntity: NewsFeedEntity) {
+        if let cell = cell as? FeedTableCell {
+            cell.topLabel.text      = newsEntity.category
+            cell.detailsLabel.text  = newsEntity.title
+            cell.dateLabel.text     = newsEntity.date?.shortString
+            if let urlString = newsEntity.thumbnail,
+                !urlString.isEmpty
+            {
+                let url = URL(string: urlString)!
+                cell.thumbnailImageView.hnk_setImageFromURL(url)
+            }
+        }
+    }
+    
     func handleRefresh(refreshControl: UIRefreshControl) {
         self.tableView.reloadData()
         refreshControl.endRefreshing()
     }
+    
+    // MARK: - Table View Delegate 
     
     override func numberOfSections(in tableView: UITableView) -> Int {
         return fetchedResultsController.sections?.count ?? 0
@@ -152,22 +181,34 @@ extension NewsFeedController  {
         }
     }
     
-    override func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            let selectedCell  = tableView.cellForRow(at: indexPath)
-            selectedCell?.contentView.backgroundColor = UIColor.white
-        }
-    }
-    
-    override func tableView(_ tableView: UITableView, willDeselectRowAt indexPath: IndexPath) -> IndexPath? {
-        return indexPath
-    }
-    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: Constants.CellIdentifer.newsCell, for: indexPath)
         let newsItem = fetchedResultsController.object(at: indexPath)
         configureCell(cell, withNews: newsItem)
         return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        
+//        let currentIndex = indexPath.row
+//        let loadedNewsCount = self.tableView.numberOfRows(inSection: 0)
+//        
+//        if currentIndex > 10  && loadedNewsCount - currentIndex < 10 {
+//            loadNewFromNextPage(index: currentIndex)
+//        }
+//        
+        
+    }
+    
+    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        
+        let currentOffset = scrollView.contentOffset.y
+        let maximumOffset = scrollView.contentSize.height - scrollView.frame.size.height
+        let deltaOffset = maximumOffset - currentOffset
+        print(deltaOffset)
+        if deltaOffset <= 1000 {
+            loadNewFromNextPage()
+        }
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
@@ -183,19 +224,6 @@ extension NewsFeedController  {
         }
     }
     
-    func configureCell(_ cell: UITableViewCell, withNews newsEntity: NewsFeedEntity) {
-        if let cell = cell as? FeedTableCell {
-            cell.topLabel.text      = newsEntity.category
-            cell.detailsLabel.text  = newsEntity.title
-            cell.dateLabel.text     = newsEntity.date?.shortString
-            if let urlString = newsEntity.thumbnail,
-                !urlString.isEmpty
-            {
-                let url = URL(string: urlString)!
-                cell.thumbnailImageView.hnk_setImageFromURL(url)
-            }
-        }
-    }
 }
 
 // MARK: - Fetched results controller delegate
@@ -239,7 +267,7 @@ extension NewsFeedController : NSFetchedResultsControllerDelegate {
     
     func controllerDidChangeContent(controller: NSFetchedResultsController<NSFetchRequestResult>) {
         // In the simplest, most efficient, case, reload the table view.
-        //tableView.reloadData()
+        tableView.reloadData()
     }
     
 }

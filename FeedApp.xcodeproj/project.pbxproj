@@ -20,6 +20,7 @@
 		B276DA6F1F13608F005093BD /* NewsFeedItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B276DA6E1F13608F005093BD /* NewsFeedItem.swift */; };
 		B276DA761F136241005093BD /* CoreDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B276DA751F136241005093BD /* CoreDataManager.swift */; };
 		B276DA781F1362AF005093BD /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B276DA771F1362AF005093BD /* NetworkManager.swift */; };
+		B276DA7A1F149E8F005093BD /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B276DA791F149E8F005093BD /* Constants.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 		B276DA6E1F13608F005093BD /* NewsFeedItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewsFeedItem.swift; sourceTree = "<group>"; };
 		B276DA751F136241005093BD /* CoreDataManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataManager.swift; sourceTree = "<group>"; };
 		B276DA771F1362AF005093BD /* NetworkManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
+		B276DA791F149E8F005093BD /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +95,7 @@
 			isa = PBXGroup;
 			children = (
 				B276DA6A1F136023005093BD /* Helpers.swift */,
+				B276DA791F149E8F005093BD /* Constants.swift */,
 				B276DA531F134971005093BD /* AppDelegate.swift */,
 				B276DA571F134971005093BD /* Main.storyboard */,
 				B276DA5D1F134971005093BD /* Assets.xcassets */,
@@ -278,6 +281,7 @@
 				B276DA541F134971005093BD /* AppDelegate.swift in Sources */,
 				B276DA5C1F134971005093BD /* FeedApp.xcdatamodeld in Sources */,
 				B276DA761F136241005093BD /* CoreDataManager.swift in Sources */,
+				B276DA7A1F149E8F005093BD /* Constants.swift in Sources */,
 				B276DA6B1F136023005093BD /* Helpers.swift in Sources */,
 				B276DA6F1F13608F005093BD /* NewsFeedItem.swift in Sources */,
 				B276DA6D1F136062005093BD /* FeedTableCell.swift in Sources */,
