@@ -20,6 +20,7 @@ struct NewsFeedItem {
     let apiUrl:             String
     let isHosted:           Bool
     let thumbnail:          String
+    var isPinned:           Bool = false
     
     init(with data: [String: Any]) {
         

@@ -49,6 +49,7 @@ class CoreDataManager {
         newsFeedEntity.category   = newsItem.sectionName
         newsFeedEntity.date       = newsItem.webPublicationDate.shortNSDate
         newsFeedEntity.thumbnail  = newsItem.thumbnail
+        newsFeedEntity.isPinned   = newsItem.isPinned
         
         let newsEntity      = NewsItemEntity(context: context)
         newsEntity.id       = newsItem.id

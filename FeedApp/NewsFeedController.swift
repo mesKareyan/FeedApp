@@ -15,9 +15,17 @@ import SVProgressHUD
 class NewsFeedController: UITableViewController {
     
     var managedObjectContext: NSManagedObjectContext? = nil
-    var fetchedResultsController: NSFetchedResultsController<NewsFeedEntity>! = nil
-    
+    var fetchedResultsControllerTV: NSFetchedResultsController<NewsFeedEntity>!
     var loadingInProgress = false
+    
+    //colelctionView
+    
+    @IBOutlet weak var collectionView: UICollectionView!
+    var  shouldReloadCollectionView = false
+    var fetchedResultsControllerCV: NSFetchedResultsController<NewsFeedEntity>!
+    var blockOperations: [BlockOperation] = []
+    var blockOperation: BlockOperation!
+
     
     //MARK: - View controller life cycle
     
@@ -29,12 +37,15 @@ class NewsFeedController: UITableViewController {
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 140
         
-        self.initializeFetchedResultsController()
-        
+        self.initializeFetchedResultsControllerForCV()
+        self.initializeFetchedResultsControllerForTV()
+
         //add table view refresh control action
         
         self.refreshControl?.addTarget(self, action: #selector(self.handleRefresh(refreshControl:)), for: UIControlEvents.valueChanged)
         loadNews(showHUD: true)
+        
+        collectionView.contentOffset = CGPoint(x: (collectionView.bounds.width - (collectionView.collectionViewLayout as! UICollectionViewFlowLayout).itemSize.width) / CGFloat(2.0), y: 0)
         
     }
     
@@ -58,6 +69,9 @@ class NewsFeedController: UITableViewController {
             case .success(with: let data):
                 let news = data as! [NewsFeedItem]
                 CoreDataManager.shared.saveNews(items: news)
+                for var newsItem in news {
+                    newsItem.isPinned = true
+                }
             }
        }
     }
@@ -91,7 +105,7 @@ class NewsFeedController: UITableViewController {
     
     //MARK: - FetchedResultsController
     
-    func initializeFetchedResultsController() {
+    func initializeFetchedResultsControllerForTV() {
         
         self.managedObjectContext = CoreDataManager.shared.persistentContainer.viewContext
         let fetchRequest: NSFetchRequest<NewsFeedEntity> = NewsFeedEntity.fetchRequest()
@@ -106,102 +120,52 @@ class NewsFeedController: UITableViewController {
         
         // Edit the section name key path and cache name if appropriate.
         // nil for section name key path means "no sections".
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.managedObjectContext!, sectionNameKeyPath:nil, cacheName: nil)
+        fetchedResultsControllerTV = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.managedObjectContext!, sectionNameKeyPath:nil, cacheName: nil)
         
-        fetchedResultsController.delegate = self
+        fetchedResultsControllerTV.delegate = self
         
         do {
-            try fetchedResultsController.performFetch()
+            try fetchedResultsControllerTV.performFetch()
         } catch {
             fatalError("Failed to initialize FetchedResultsController: \(error)")
         }
         
     }
     
-    // MARK: - Segues
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == Constants.Segues.showDetail.rawValue {
-            if let indexPath = tableView.indexPathForSelectedRow {
-                let newsObject = fetchedResultsController.object(at: indexPath)
-                CoreDataManager.shared.makeNewsRead(news: newsObject)
-                let controller = segue.destination as! NewsDetailViewController
-                controller.newsFeedItem = newsObject
-                controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
-                controller.navigationItem.leftItemsSupplementBackButton = true
-            }
-        }
-    }
-}
-
-// MARK: - Table View
-
-extension NewsFeedController  {
-    
-    func configureCell(_ cell: UITableViewCell, withNews newsEntity: NewsFeedEntity) {
-        if let cell = cell as? FeedTableCell {
-            cell.topLabel.text      = newsEntity.category
-            cell.detailsLabel.text  = newsEntity.title
-            cell.dateLabel.text     = newsEntity.date?.shortString
-            if let urlString = newsEntity.thumbnail,
-                !urlString.isEmpty
-            {
-                let url = URL(string: urlString)!
-                cell.thumbnailImageView.hnk_setImageFromURL(url)
-            }
-        }
-    }
-    
-    func handleRefresh(refreshControl: UIRefreshControl) {
-        self.tableView.reloadData()
-        refreshControl.endRefreshing()
-    }
-    
-    // MARK: - Table View Delegate 
-    
-    override func numberOfSections(in tableView: UITableView) -> Int {
-        return fetchedResultsController.sections?.count ?? 0
-    }
-    
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let sectionInfo = fetchedResultsController.sections![section]
-        return sectionInfo.numberOfObjects
-    }
-    
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        guard let sectionInfo = fetchedResultsController.sections?[section] else { fatalError("Unexpected Section") }
-        return sectionInfo.name
-    }
-    
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            let selectedCell = tableView.cellForRow(at: indexPath)
-            selectedCell?.contentView.backgroundColor = UIColor.groupTableViewBackground
-            tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
-        }
-    }
-    
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: Constants.CellIdentifer.newsCell, for: indexPath)
-        let newsItem = fetchedResultsController.object(at: indexPath)
-        configureCell(cell, withNews: newsItem)
-        return cell
-    }
-    
-    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+    func initializeFetchedResultsControllerForCV() {
         
-//        let currentIndex = indexPath.row
-//        let loadedNewsCount = self.tableView.numberOfRows(inSection: 0)
-//        
-//        if currentIndex > 10  && loadedNewsCount - currentIndex < 10 {
-//            loadNewFromNextPage(index: currentIndex)
-//        }
-//        
+        self.managedObjectContext = CoreDataManager.shared.persistentContainer.viewContext
+        let fetchRequest: NSFetchRequest<NewsFeedEntity> = NewsFeedEntity.fetchRequest()
+        
+        // Set the batch size to a suitable number.
+        fetchRequest.fetchBatchSize = 20
+        
+        // Edit the sort key as appropriate.
+        let sortDescriptor = NSSortDescriptor(key: "date", ascending: false)
+        let predicate = NSPredicate(format: "isPinned == %@", NSNumber(booleanLiteral: false))
+        fetchRequest.predicate = predicate
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        
+        // Edit the section name key path and cache name if appropriate.
+        // nil for section name key path means "no sections".
+        fetchedResultsControllerCV = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.managedObjectContext!, sectionNameKeyPath:nil, cacheName: nil)
+        
+        fetchedResultsControllerCV.delegate = self
+        
+        do {
+            try fetchedResultsControllerCV.performFetch()
+        } catch {
+            fatalError("Failed to initialize FetchedResultsController: \(error)")
+        }
         
     }
+    
+    //MARK: - ScrollView delegate 
     
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        
+        guard scrollView == tableView else {
+            return
+        }
         let currentOffset = scrollView.contentOffset.y
         let maximumOffset = scrollView.contentSize.height - scrollView.frame.size.height
         let deltaOffset = maximumOffset - currentOffset
@@ -211,66 +175,29 @@ extension NewsFeedController  {
         }
     }
     
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            let context = fetchedResultsController.managedObjectContext
-            context.delete(fetchedResultsController.object(at: indexPath))
-            do {
-                try context.save()
-            } catch {
-                let nserror = error as NSError
-                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+    // MARK: - Segues
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == Constants.Segues.showDetail.rawValue {
+            if let indexPath = tableView.indexPathForSelectedRow {
+                let newsObject = fetchedResultsControllerTV.object(at: indexPath)
+                CoreDataManager.shared.makeNewsRead(news: newsObject)
+                let controller = segue.destination as! NewsDetailViewController
+                controller.newsFeedItem = newsObject
+                controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
+                controller.navigationItem.leftItemsSupplementBackButton = true
             }
         }
     }
     
-}
-
-// MARK: - Fetched results controller delegate
-
-extension NewsFeedController : NSFetchedResultsControllerDelegate {
     
-    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        tableView.beginUpdates()
-    }
-    
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
-        switch type {
-        case .insert:
-            tableView.insertSections(IndexSet(integer: sectionIndex), with: .fade)
-        case .delete:
-            tableView.deleteSections(IndexSet(integer: sectionIndex), with: .fade)
-        case .move:
-            break
-        case .update:
-            break
+    deinit {
+        for operation: BlockOperation in blockOperations {
+            operation.cancel()
         }
-    }
-    
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-        switch type {
-        case .insert:
-            self.tableView.insertRows(at: [newIndexPath!], with: .fade)
-        case .delete:
-            self.tableView.deleteRows(at: [indexPath!], with: .fade)
-        case .update:
-            self.tableView.reloadRows(at: [indexPath!], with: .fade)
-        case .move:
-            self.tableView.insertRows(at: [newIndexPath!], with: .fade)
-            self.tableView.deleteRows(at: [indexPath!], with: .fade)
-        }
-    }
-    
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        self.tableView.endUpdates()
-    }
-    
-    func controllerDidChangeContent(controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        // In the simplest, most efficient, case, reload the table view.
-        tableView.reloadData()
+        blockOperations.removeAll(keepingCapacity: false)
     }
     
 }
-
 
 

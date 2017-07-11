@@ -20,7 +20,7 @@ enum InternalError: Error {
 extension URL {
     
     init?(string: String, queryParameters: [String : String]) {
-         self.init(string: string)
+        self.init(string: string)
         //params
         guard var urlComponents = URLComponents(string: string) else {
             return nil
@@ -47,20 +47,27 @@ class NetworkManager {
         private static let apiKey = "1e955f6d-31eb-436c-aab7-d710fbbec527"
         private static let base = "https://content.guardianapis.com/search"
         //?api-key=" +
-              //  apiKey +
-               // "&show-fields=thumbnail"
-        static let  urlForNewestNews = URL(string: base,
-                                           queryParameters: ["api-key"   : apiKey,
-                                                             "page-size" : String(Constants.newsPageCount)])!
+        //  apiKey +
+        // "&show-fields=thumbnail"
+        static let  urlForNewestNews =
+            URL(string: base,
+                queryParameters: [
+                    "api-key"   : apiKey,
+                    "page-size" : String(Constants.newsPageCount),
+                    "show-fields" : "thumbnail"
+                ])!
         
         static func urlFor(page: Int) -> URL {
-            let urlForNews = URL(string: base,
-                                 queryParameters: ["api-key"   : apiKey,
-                                                   "page"      : String(page),
-                                                   "page-size" : String(Constants.newsPageCount)])!
+            let urlForNews =
+                URL(string: base,
+                    queryParameters: [
+                        "api-key"     : apiKey,
+                        "page"        : String(page),
+                        "page-size"   : String(Constants.newsPageCount),
+                        "show-fields" : "thumbnail"
+                ])!
             return urlForNews
         }
-        
         
     }
     
@@ -155,8 +162,8 @@ class ApiRequestSerialization {
             guard let jsonDict = try JSONSerialization.jsonObject(with: data,
                                                                   options: .allowFragments)
                 as? [String : Any],
-            let responseVal = jsonDict["response"] as? [String : Any],
-            let results = responseVal["results"] as? [[String : Any]]
+                let responseVal = jsonDict["response"] as? [String : Any],
+                let results = responseVal["results"] as? [[String : Any]]
                 else {
                     return .fail(with: InternalError.badResponse)
             }

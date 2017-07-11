@@ -19,7 +19,8 @@ struct Constants {
     
     struct CellIdentifer {
         private init () {}
-        static let newsCell = "newsCell"
+        static let tableCell      = "tableCell"
+        static let collectionCell = "collectionCell"
     }
     
     struct AnimationDuration {

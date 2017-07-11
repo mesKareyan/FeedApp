@@ -16,11 +16,6 @@ class FeedTableCell: UITableViewCell {
     @IBOutlet weak var detailsLabel: UILabel!
     @IBOutlet weak var dateLabel: UILabel!
     
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        //unreadCircleView.layer.cornerRadius = unreadCircleView.frame.width / 2.0;
-    }
-    
     func configure(for newsEntity: NewsItemEntity) {
     }
     
