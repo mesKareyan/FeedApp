@@ -23,6 +23,12 @@ class CoreDataManager {
         self.saveContext()
     }
     
+    func saveBody(_ body: String, forNews newsEntity: NewsItemEntity) {
+        newsEntity.body =  body.data(using: .utf8)! as NSData
+        newsEntity.isSaved = true
+        CoreDataManager.shared.saveContext()
+    }
+    
     private func insertNewsObjectsFor(newsItem: NewsFeedItem) {
         //use shareurl as id for DB
         guard !newsItem.id.isEmpty else {
@@ -49,14 +55,13 @@ class CoreDataManager {
         newsFeedEntity.category   = newsItem.sectionName
         newsFeedEntity.date       = newsItem.webPublicationDate.shortNSDate
         newsFeedEntity.thumbnail  = newsItem.thumbnail
-        newsFeedEntity.isPinned   = newsItem.isPinned
         
         let newsEntity      = NewsItemEntity(context: context)
         newsEntity.id       = newsItem.id
         newsEntity.apiURL   = newsItem.apiUrl
         newsEntity.webURL   = newsItem.webUrl
         newsEntity.feedItem = newsFeedEntity
-        
+                
         // Save the context.
         do {
             try context.save()

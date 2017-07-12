@@ -10,6 +10,7 @@ import UIKit
 
 extension NewsFeedController : UICollectionViewDelegate,  UICollectionViewDataSource {
     
+
     func numberOfSections(in collectionView: UICollectionView) -> Int {
          return fetchedResultsControllerCV.sections?.count ?? 0
     }
@@ -26,15 +27,10 @@ extension NewsFeedController : UICollectionViewDelegate,  UICollectionViewDataSo
         return cell
     }
     
+    
     func configureCellForCollectionView(_ cell: UICollectionViewCell, withNews newsEntity: NewsFeedEntity) {
         if let cell = cell as? FeedCollectionCell {
-            cell.detailsLabel.text  = newsEntity.title
-            if let urlString = newsEntity.thumbnail,
-                !urlString.isEmpty
-            {
-                let url = URL(string: urlString)!
-                cell.thumbnailImageView.hnk_setImageFromURL(url, placeholder: #imageLiteral(resourceName: "empty"))
-            }
+            cell.configure(for: newsEntity)
         }
     }
     

@@ -23,10 +23,10 @@ class NewsFeedController: UITableViewController {
     @IBOutlet weak var collectionView: UICollectionView!
     var  shouldReloadCollectionView = false
     var fetchedResultsControllerCV: NSFetchedResultsController<NewsFeedEntity>!
-    var blockOperations: [BlockOperation] = []
     var blockOperation: BlockOperation!
-
     
+    var headerViewHeight: CGFloat = 220.0
+
     //MARK: - View controller life cycle
     
     override func viewDidLoad() {
@@ -59,6 +59,10 @@ class NewsFeedController: UITableViewController {
         }, completion: nil)
     }
     
+    //MARK: Actions
+    
+    //MARK: Initialization
+    
     func loadNews(showHUD: Bool = false) {
         SVProgressHUD.show()
         NetworkManager.shared.getNewestNews { result in
@@ -69,9 +73,6 @@ class NewsFeedController: UITableViewController {
             case .success(with: let data):
                 let news = data as! [NewsFeedItem]
                 CoreDataManager.shared.saveNews(items: news)
-                for var newsItem in news {
-                    newsItem.isPinned = true
-                }
             }
        }
     }
@@ -82,7 +83,6 @@ class NewsFeedController: UITableViewController {
         }
         loadingInProgress = true
         let page = tableView.numberOfRows(inSection: 0) / Constants.newsPageCount + 1
-        title = "Loading page \(page) index \(index) count\(tableView.numberOfRows(inSection: 0))"
         SVProgressHUD.show()
         NetworkManager.shared.getNews(atPage: page) { result in
             SVProgressHUD.dismiss()
@@ -142,7 +142,7 @@ class NewsFeedController: UITableViewController {
         
         // Edit the sort key as appropriate.
         let sortDescriptor = NSSortDescriptor(key: "date", ascending: false)
-        let predicate = NSPredicate(format: "isPinned == %@", NSNumber(booleanLiteral: false))
+        let predicate = NSPredicate(format: "isPinned == %@", NSNumber(booleanLiteral: true))
         fetchRequest.predicate = predicate
         fetchRequest.sortDescriptors = [sortDescriptor]
         
@@ -169,8 +169,7 @@ class NewsFeedController: UITableViewController {
         let currentOffset = scrollView.contentOffset.y
         let maximumOffset = scrollView.contentSize.height - scrollView.frame.size.height
         let deltaOffset = maximumOffset - currentOffset
-        print(deltaOffset)
-        if deltaOffset <= 1000 {
+        if deltaOffset <= self.view.bounds.width {
             loadNewFromNextPage()
         }
     }
@@ -183,19 +182,44 @@ class NewsFeedController: UITableViewController {
                 let newsObject = fetchedResultsControllerTV.object(at: indexPath)
                 CoreDataManager.shared.makeNewsRead(news: newsObject)
                 let controller = segue.destination as! NewsDetailViewController
-                controller.newsFeedItem = newsObject
+                controller.newsItem = newsObject.newsItem
                 controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
                 controller.navigationItem.leftItemsSupplementBackButton = true
             }
         }
     }
+
+    //MARK: - Horizontal View
     
-    
-    deinit {
-        for operation: BlockOperation in blockOperations {
-            operation.cancel()
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        if let headerView = tableView.tableHeaderView {
+            var height = headerView.systemLayoutSizeFitting(UILayoutFittingCompressedSize).height
+            var headerFrame = headerView.frame
+            if let pinnedNewsCount = fetchedResultsControllerCV.fetchedObjects?.count,
+                pinnedNewsCount < 1 {
+                height = 0
+            } else {
+                height = headerViewHeight
+            }
+            //Comparison necessary to avoid infinite loop
+            if height != headerFrame.size.height {
+                UIView.transition(with: headerView, duration: 0.5, options: .curveEaseOut, animations: { 
+                    headerFrame.size.height = height
+                    headerView.frame = headerFrame
+                    self.tableView.tableHeaderView = headerView
+                }, completion: nil)
+            }
         }
-        blockOperations.removeAll(keepingCapacity: false)
+    }
+    
+    func updateHorizontalView() {
+        
+        if let pinnedNewsCount = fetchedResultsControllerCV.fetchedObjects?.count,
+            pinnedNewsCount > 1 {
+        }
+        
     }
     
 }

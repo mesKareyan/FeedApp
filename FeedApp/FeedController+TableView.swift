@@ -14,15 +14,7 @@ extension NewsFeedController  {
     
     func configureCellForTableView(_ cell: UITableViewCell, withNews newsEntity: NewsFeedEntity) {
         if let cell = cell as? FeedTableCell {
-            cell.topLabel.text      = newsEntity.category
-            cell.detailsLabel.text  = newsEntity.title
-            cell.dateLabel.text     = newsEntity.date?.shortString
-            if let urlString = newsEntity.thumbnail,
-                !urlString.isEmpty
-            {
-                let url = URL(string: urlString)!
-                cell.thumbnailImageView.hnk_setImageFromURL(url, placeholder: #imageLiteral(resourceName: "empty"))
-            }
+            cell.configure(for: newsEntity)
         }
     }
     

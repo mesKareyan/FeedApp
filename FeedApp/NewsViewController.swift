@@ -7,14 +7,21 @@
 //
 
 import UIKit
+import SVProgressHUD
+import ReachabilitySwift
+
 
 class NewsDetailViewController: UIViewController {
     
-    
-    @IBOutlet weak var newsWebView:             UIWebView!
+    let reachability = Reachability()!
+    var isOfflineMode = false
+    var isPageLoaded  = false
+    @IBOutlet weak var newsWebView: UIWebView!
 
-    var newsFeedItem: NewsFeedEntity? {
+    var newsItem: NewsItemEntity! {
         didSet {
+            newsItem.feedItem?.isRead = true
+            CoreDataManager.shared.saveContext()
             // Update the view.
             if self.isViewLoaded {
                 configureView()
@@ -24,7 +31,9 @@ class NewsDetailViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        newsWebView.delegate = self
         configureView()
+        startReachibility()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -37,30 +46,158 @@ class NewsDetailViewController: UIViewController {
         }
     }
     
-    override var shouldAutorotate: Bool {
-        return UIDevice.current.userInterfaceIdiom != .pad
-    }
-    
-    func configureView() {
-        // Update the user interface for the news item.
-        if let feedData = self.newsFeedItem {
-            //news title ui
-            self.title = self.newsFeedItem?.category
-            if let newsItem = feedData.newsItem,
-                let webUrlString = newsItem.webURL,
-                let url = URL(string: webUrlString)
-            {
-                let request = URLRequest(url: url)
-                self.newsWebView.loadRequest(request)
+    func startReachibility() {
+        
+        reachability.whenReachable = { [unowned self] reachability in
+            // this is called on a background thread
+            DispatchQueue.main.async {
+                self.reloadPage()
             }
-            saveData()
+        }
+        reachability.whenUnreachable = { [unowned self] reachability in
+            // this is called on a background thread
+            guard !self.isPageLoaded else {
+                return
+            }
+            DispatchQueue.main.async {
+                if self.newsItem.isSaved {
+                    self.loadSavedBody()
+                }
+                SVProgressHUD.showError(withStatus: "No internet conection")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    SVProgressHUD.dismiss()
+                }
+
+            }
+        }
+        
+        do {
+            try reachability.startNotifier()
+        } catch {
+            print("Unable to start notifier")
         }
     }
     
-    func saveData() {
+    func configureView() {
+        
+        SVProgressHUD.show()
+        
+        if let newsItem = self.newsItem {
+            if let feedItem = newsItem.feedItem {
+                
+                title = feedItem.category
+                navigationItem
+                    .rightBarButtonItems![1]
+                    .isEnabled = !feedItem.isRead
+                navigationItem
+                    .rightBarButtonItems![0]
+                    .isEnabled = true
+                reloadPage()
+            }
+            
+        }
         
     }
     
+    func reloadPage() {
+        isOfflineMode = false
+        if let webUrlString = newsItem.webURL,
+            let url = URL(string: webUrlString)
+        {
+            let request = URLRequest(url: url)
+            self.newsWebView.loadRequest(request)
+        }
+    }
     
+    @IBAction func pinButtonTapped(_ sender: UIBarButtonItem) {
+        self.newsItem.feedItem?.isPinned = true
+        CoreDataManager.shared.saveContext()
+        sender.isEnabled = false
+    }
+    
+    @IBAction func actionButtonTapped(_ sender: UIBarButtonItem) {
+        
+        guard  let newsItem = self.newsItem,
+                let _ = newsItem.feedItem else {return }
+        
+        let message:    String = ""
+        let title:      String
+        let actionText: String
+        
+        if newsItem.isSaved {
+            if isOfflineMode {
+                title      =  "Reload page?"
+                actionText =  "Reload"
+            } else {
+                title      =  "Open saved version of article?"
+                actionText =  "Open"
+            }
+        } else {
+            title      =  "Save article for offline use?"
+            actionText =  "Save"
+        }
+        
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
+        
+        alert.popoverPresentationController?.barButtonItem = sender
+        
+        alert.addAction(UIAlertAction(title: actionText, style: .default)
+        { _ in
+            if newsItem.isSaved {
+                if self.isOfflineMode {
+                    self.reloadPage()
+                } else {
+                    self.loadSavedBody()
+                }
+            } else {
+                 self.saveBody()
+            }
+        })
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .destructive, handler: nil))
+        
+        present(alert, animated: true, completion: nil)
+        
+    }
+    
+    //
+    
+    private func saveBody() {
+        guard  let newsItem = self.newsItem,
+            let feedItem = newsItem.feedItem else {return }
+        NetworkManager.shared.getBodyFor(newsItem: feedItem, completion: { result in
+            switch result {
+            case .fail(with: let error):
+                print(error)
+            case .success(with: let body):
+                let bodyString = body as! String
+                CoreDataManager
+                    .shared
+                    .saveBody(bodyString,
+                              forNews: newsItem)
+            }
+        })
+    }
+    
+    private func loadSavedBody() {
+        let bodyString = String(data: newsItem.body! as Data, encoding: .utf8)
+        newsWebView.loadHTMLString(
+            bodyString!,
+            baseURL: URL(string: newsItem.webURL!))
+        isOfflineMode = true
+    }
+
 }
 
+
+extension NewsDetailViewController : UIWebViewDelegate {
+    
+    func webViewDidStartLoad(_ webView: UIWebView) {
+        isPageLoaded = false
+    }
+    
+    func webViewDidFinishLoad(_ webView: UIWebView) {
+        SVProgressHUD.dismiss()
+        isPageLoaded = true
+    }
+}

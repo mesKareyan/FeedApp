@@ -69,6 +69,16 @@ class NetworkManager {
             return urlForNews
         }
         
+        static func urlForSingleNews(url: String) -> URL {
+            let urlForNews =
+                URL(string: url,
+                    queryParameters: [
+                        "api-key"     : apiKey,
+                        "show-fields" : "body"
+                    ])!
+            return urlForNews
+        }
+        
     }
     
     typealias NetworkRequestCompletion = (RequestResult) -> ()
@@ -117,33 +127,31 @@ class NetworkManager {
         task.resume()
     }
     
-    //MARK: - Images async donwload
-    func downloadImage(at urlString: String, completion: @escaping (_ image: UIImage?) -> ()) {
-        guard let url = URL(string: urlString) else {
-            DispatchQueue.main.async() {
-                completion(nil)
-            }
-            return
-        }
-        getDataFrom(url: url) { (data, response, error)  in
-            guard let data = data, error == nil else {
-                DispatchQueue.main.async() {
-                    completion(nil)
+    //Single item
+    
+    func getBodyFor(newsItem: NewsFeedEntity,
+                     completion: @escaping NetworkRequestCompletion) {
+        var request = URLRequest(url: API.urlForSingleNews(url: newsItem.newsItem!.apiURL!))
+        request.httpMethod = "GET"
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard error == nil else {
+                DispatchQueue.main.async {
+                    //fail
+                    completion(.fail(with: error!))
                 }
                 return
             }
-            let image =  UIImage(data: data)
-            DispatchQueue.main.async() {
-                completion(image)
+            guard let data = data else {
+                DispatchQueue.main.async {
+                    //fail
+                    completion(.fail(with: InternalError.badResponse))
+                }
+                return
             }
+            let result = ApiRequestSerialization.resultBodyFrom(response: response, data: data)
+            completion(result)
         }
-    }
-    
-    private func getDataFrom(url: URL, completion: @escaping (_ data: Data?, _  response: URLResponse?, _ error: Error?) -> Void) {
-        URLSession.shared.dataTask(with: url) {
-            (data, response, error) in
-            completion(data, response, error)
-            }.resume()
+        task.resume()
     }
     
 }
@@ -169,6 +177,31 @@ class ApiRequestSerialization {
             }
             let news = results.map { reslultData in NewsFeedItem(with: reslultData) }
             return .success(with: news)
+        }
+        catch
+        {
+            return .fail(with: InternalError.badResponse)
+        }
+    }
+    
+    fileprivate static func resultBodyFrom(response: URLResponse?,
+                                      data: Data) -> RequestResult {
+        if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {
+            // check for http errors
+             return .fail(with: InternalError.badResponse)
+        }
+        do {
+            guard let jsonDict = try JSONSerialization.jsonObject(with: data,
+                                                                  options: .allowFragments)
+                as? [String : Any],
+                let responseVal = jsonDict["response"] as? [String : Any],
+                let results = responseVal["content"] as? [String : Any],
+                let fields  = results["fields"] as? [String: Any],
+                let body    = fields["body"] as? String
+                else {
+                     return .fail(with: InternalError.badResponse)
+            }
+            return .success(with: body)
         }
         catch
         {

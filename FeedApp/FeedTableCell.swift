@@ -16,7 +16,19 @@ class FeedTableCell: UITableViewCell {
     @IBOutlet weak var detailsLabel: UILabel!
     @IBOutlet weak var dateLabel: UILabel!
     
-    func configure(for newsEntity: NewsItemEntity) {
+    func configure(for newsEntity: NewsFeedEntity) {
+        
+        topLabel.text      = newsEntity.category
+        detailsLabel.text  = newsEntity.title
+        dateLabel.text     = newsEntity.date?.shortString
+        unreadCircleView.isHidden = newsEntity.isRead
+        
+        if let urlString = newsEntity.thumbnail,
+            !urlString.isEmpty
+        {
+            let url = URL(string: urlString)!
+            thumbnailImageView.hnk_setImageFromURL(url, placeholder: #imageLiteral(resourceName: "empty"))
+        }
     }
     
     

@@ -1,9 +1,11 @@
 PODS:
   - HanekeSwift (0.10.1)
+  - ReachabilitySwift (3)
   - SVProgressHUD (2.1.2)
 
 DEPENDENCIES:
   - HanekeSwift (from `https://github.com/Haneke/HanekeSwift.git`, branch `feature/swift-3`)
+  - ReachabilitySwift (~> 3)
   - SVProgressHUD
 
 EXTERNAL SOURCES:
@@ -18,8 +20,9 @@ CHECKOUT OPTIONS:
 
 SPEC CHECKSUMS:
   HanekeSwift: 4113367892828e7700d24a384027de6ebc79aad1
+  ReachabilitySwift: f5b9bb30a0777fac8f09ce8b067e32faeb29bb64
   SVProgressHUD: c404a55d78acbeb7ebb78b76d3faf986475a6994
 
-PODFILE CHECKSUM: 6c9550042519124c9f78c20be214a66e29a5aeca
+PODFILE CHECKSUM: bc1da2e6e30835aef87fdca288dceed0466893dd
 
 COCOAPODS: 1.1.1
