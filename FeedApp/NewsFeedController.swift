@@ -6,7 +6,6 @@
 //  Copyright © 2017 none. All rights reserved.
 //
 
-
 import UIKit
 import CoreData
 import Haneke
@@ -19,7 +18,6 @@ class NewsFeedController: UITableViewController {
     var loadingInProgress = false
     
     //colelctionView
-    
     @IBOutlet weak var collectionView: UICollectionView!
     var  shouldReloadCollectionView = false
     var fetchedResultsControllerCV: NSFetchedResultsController<NewsFeedEntity>!
@@ -39,11 +37,6 @@ class NewsFeedController: UITableViewController {
         
         self.initializeFetchedResultsControllerForCV()
         self.initializeFetchedResultsControllerForTV()
-
-        //add table view refresh control action
-        
-        self.refreshControl?.addTarget(self, action: #selector(self.handleRefresh(refreshControl:)), for: UIControlEvents.valueChanged)
-        loadNews(showHUD: true)
         
         collectionView.contentOffset = CGPoint(x: (collectionView.bounds.width - (collectionView.collectionViewLayout as! UICollectionViewFlowLayout).itemSize.width) / CGFloat(2.0), y: 0)
         
@@ -59,7 +52,6 @@ class NewsFeedController: UITableViewController {
         }, completion: nil)
     }
     
-    //MARK: Actions
     
     //MARK: Initialization
     
@@ -178,7 +170,16 @@ class NewsFeedController: UITableViewController {
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == Constants.Segues.showDetail.rawValue {
-            if let indexPath = tableView.indexPathForSelectedRow {
+            
+            let indexPath: IndexPath?
+            
+            if sender is UITableViewCell {
+                indexPath = tableView.indexPathForSelectedRow
+            } else {
+                indexPath = collectionView.indexPathsForSelectedItems?.first
+            }
+            
+            if let indexPath = indexPath {
                 let newsObject = fetchedResultsControllerTV.object(at: indexPath)
                 CoreDataManager.shared.makeNewsRead(news: newsObject)
                 let controller = segue.destination as! NewsDetailViewController
@@ -214,13 +215,7 @@ class NewsFeedController: UITableViewController {
         }
     }
     
-    func updateHorizontalView() {
-        
-        if let pinnedNewsCount = fetchedResultsControllerCV.fetchedObjects?.count,
-            pinnedNewsCount > 1 {
-        }
-        
-    }
+    
     
 }
 

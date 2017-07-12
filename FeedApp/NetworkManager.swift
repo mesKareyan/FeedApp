@@ -46,9 +46,7 @@ class NetworkManager {
         
         private static let apiKey = "1e955f6d-31eb-436c-aab7-d710fbbec527"
         private static let base = "https://content.guardianapis.com/search"
-        //?api-key=" +
-        //  apiKey +
-        // "&show-fields=thumbnail"
+
         static let  urlForNewestNews =
             URL(string: base,
                 queryParameters: [
@@ -208,4 +206,5 @@ class ApiRequestSerialization {
             return .fail(with: InternalError.badResponse)
         }
     }
+    
 }

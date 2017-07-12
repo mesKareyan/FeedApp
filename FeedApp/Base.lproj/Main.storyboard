@@ -77,7 +77,6 @@
                                                         <state key="normal" image="cancel"/>
                                                         <connections>
                                                             <action selector="closeButtonTaped:" destination="UfK-6c-g36" eventType="touchUpInside" id="I4T-6T-4kT"/>
-                                                            <action selector="horizontallCellCloseButtonTapped:" destination="JGa-K9-lkf" eventType="touchUpInside" id="4YH-ci-FtD"/>
                                                         </connections>
                                                     </button>
                                                 </subviews>
@@ -95,6 +94,7 @@
                                                 <outlet property="containerView" destination="DHH-Jw-uSg" id="q9x-aS-nmK"/>
                                                 <outlet property="detailsLabel" destination="iS4-R3-AFY" id="GoM-an-AY8"/>
                                                 <outlet property="thumbnailImageView" destination="UpO-52-ghs" id="bmO-dy-njw"/>
+                                                <segue destination="h53-2G-XzQ" kind="show" identifier="showDetail" id="dNO-Qb-xQq"/>
                                             </connections>
                                         </collectionViewCell>
                                     </cells>
@@ -297,7 +297,7 @@
                     </connections>
                 </tapGestureRecognizer>
             </objects>
-            <point key="canvasLocation" x="1645.5999999999999" y="86.806596701649184"/>
+            <point key="canvasLocation" x="2489" y="-631"/>
         </scene>
     </scenes>
     <resources>
@@ -305,4 +305,7 @@
         <image name="cancel" width="22" height="22"/>
         <image name="empty" width="900" height="450"/>
     </resources>
+    <inferredMetricsTieBreakers>
+        <segue reference="dNO-Qb-xQq"/>
+    </inferredMetricsTieBreakers>
 </document>

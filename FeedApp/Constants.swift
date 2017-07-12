@@ -8,7 +8,6 @@
 
 import Foundation
 
-
 struct Constants {
     
     private init () {}

@@ -10,7 +10,6 @@ import UIKit
 import SVProgressHUD
 import ReachabilitySwift
 
-
 class NewsDetailViewController: UIViewController {
     
     let reachability = Reachability()!
@@ -76,6 +75,7 @@ class NewsDetailViewController: UIViewController {
         } catch {
             print("Unable to start notifier")
         }
+        
     }
     
     func configureView() {
@@ -84,19 +84,13 @@ class NewsDetailViewController: UIViewController {
         
         if let newsItem = self.newsItem {
             if let feedItem = newsItem.feedItem {
-                
                 title = feedItem.category
                 navigationItem
                     .rightBarButtonItems![1]
-                    .isEnabled = !feedItem.isRead
-                navigationItem
-                    .rightBarButtonItems![0]
-                    .isEnabled = true
+                    .isEnabled = !feedItem.isPinned
                 reloadPage()
             }
-            
         }
-        
     }
     
     func reloadPage() {
@@ -159,8 +153,6 @@ class NewsDetailViewController: UIViewController {
         present(alert, animated: true, completion: nil)
         
     }
-    
-    //
     
     private func saveBody() {
         guard  let newsItem = self.newsItem,

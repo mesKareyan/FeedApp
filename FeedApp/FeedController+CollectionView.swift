@@ -10,7 +10,6 @@ import UIKit
 
 extension NewsFeedController : UICollectionViewDelegate,  UICollectionViewDataSource {
     
-
     func numberOfSections(in collectionView: UICollectionView) -> Int {
          return fetchedResultsControllerCV.sections?.count ?? 0
     }
@@ -27,12 +26,10 @@ extension NewsFeedController : UICollectionViewDelegate,  UICollectionViewDataSo
         return cell
     }
     
-    
     func configureCellForCollectionView(_ cell: UICollectionViewCell, withNews newsEntity: NewsFeedEntity) {
         if let cell = cell as? FeedCollectionCell {
             cell.configure(for: newsEntity)
         }
     }
-    
     
 }

@@ -13,15 +13,12 @@ import CoreData
 
 extension NewsFeedController : NSFetchedResultsControllerDelegate {
     
-    
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         if controller == fetchedResultsControllerTV {
             tableView.beginUpdates()
             return
         }
-        
         self.blockOperation = BlockOperation()
-        
     }
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
