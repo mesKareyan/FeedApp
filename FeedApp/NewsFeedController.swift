@@ -40,6 +40,8 @@ class NewsFeedController: UITableViewController {
         
         collectionView.contentOffset = CGPoint(x: (collectionView.bounds.width - (collectionView.collectionViewLayout as! UICollectionViewFlowLayout).itemSize.width) / CGFloat(2.0), y: 0)
         
+        startTimer()
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -55,7 +57,7 @@ class NewsFeedController: UITableViewController {
     
     //MARK: Initialization
     
-    func loadNews(showHUD: Bool = false) {
+    func loadLastNews(showHUD: Bool = false) {
         SVProgressHUD.show()
         NetworkManager.shared.getNewestNews { result in
             SVProgressHUD.dismiss()
@@ -215,7 +217,15 @@ class NewsFeedController: UITableViewController {
         }
     }
     
+    //MARK: - Timer
     
+    func startTimer() {
+        let timer  = Timer.scheduledTimer(withTimeInterval: 30,
+                                                   repeats: true) { timer in
+                self.loadLastNews()
+        }
+        timer.fire()
+    }
     
 }
 
