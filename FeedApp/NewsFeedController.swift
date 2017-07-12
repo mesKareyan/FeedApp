@@ -58,7 +58,9 @@ class NewsFeedController: UITableViewController {
     //MARK: Initialization
     
     func loadLastNews(showHUD: Bool = false) {
-        SVProgressHUD.show()
+        if showHUD {
+            SVProgressHUD.show()
+        }
         NetworkManager.shared.getNewestNews { result in
             SVProgressHUD.dismiss()
             switch result {
@@ -222,7 +224,7 @@ class NewsFeedController: UITableViewController {
     func startTimer() {
         let timer  = Timer.scheduledTimer(withTimeInterval: 30,
                                                    repeats: true) { timer in
-                self.loadLastNews()
+                self.loadLastNews(showHUD: false)
         }
         timer.fire()
     }
