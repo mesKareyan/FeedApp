@@ -52,8 +52,8 @@ class NewsFeedController: UITableViewController {
                 self.navigationController?.navigationBar.barTintColor = UIColor.white
                 self.navigationController?.navigationBar.barStyle = .default
         }, completion: nil)
+        SVProgressHUD.dismiss()
     }
-    
     
     //MARK: Initialization
     
@@ -176,15 +176,20 @@ class NewsFeedController: UITableViewController {
         if segue.identifier == Constants.Segues.showDetail.rawValue {
             
             let indexPath: IndexPath?
+            var fromTV = false
             
             if sender is UITableViewCell {
                 indexPath = tableView.indexPathForSelectedRow
+                fromTV = true
             } else {
                 indexPath = collectionView.indexPathsForSelectedItems?.first
             }
             
             if let indexPath = indexPath {
-                let newsObject = fetchedResultsControllerTV.object(at: indexPath)
+                let newsObject = fromTV ?
+                    fetchedResultsControllerTV.object(at: indexPath) :
+                    fetchedResultsControllerCV.object(at: indexPath)
+                
                 CoreDataManager.shared.makeNewsRead(news: newsObject)
                 let controller = segue.destination as! NewsDetailViewController
                 controller.newsItem = newsObject.newsItem
