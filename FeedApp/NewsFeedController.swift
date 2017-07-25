@@ -31,9 +31,11 @@ class NewsFeedController: UITableViewController {
         
         super.viewDidLoad()
         
+        tableView.prefetchDataSource = self
+        
         (tableView as UIScrollView).delegate = self
         tableView.rowHeight = UITableViewAutomaticDimension
-        tableView.estimatedRowHeight = 140
+        tableView.estimatedRowHeight = 500
         
         self.initializeFetchedResultsControllerForCV()
         self.initializeFetchedResultsControllerForTV()
@@ -80,8 +82,8 @@ class NewsFeedController: UITableViewController {
         loadingInProgress = true
         let page = tableView.numberOfRows(inSection: 0) / Constants.newsPageCount + 1
         SVProgressHUD.show()
+        tableView.isScrollEnabled = false
         NetworkManager.shared.getNews(atPage: page) { result in
-            SVProgressHUD.dismiss()
             switch result {
             case .fail(with: let error):
                 self.showAlert(for: error)
@@ -90,6 +92,8 @@ class NewsFeedController: UITableViewController {
                 CoreDataManager.shared.saveNews(items: news)
                 self.loadingInProgress = false
             }
+            SVProgressHUD.dismiss()
+            self.tableView.isScrollEnabled = true
         }
     }
     
@@ -165,7 +169,7 @@ class NewsFeedController: UITableViewController {
         let currentOffset = scrollView.contentOffset.y
         let maximumOffset = scrollView.contentSize.height - scrollView.frame.size.height
         let deltaOffset = maximumOffset - currentOffset
-        if deltaOffset <= self.view.bounds.width {
+        if deltaOffset <= 0 { //self.view.bounds.width
             loadNewFromNextPage()
         }
     }
@@ -222,6 +226,9 @@ class NewsFeedController: UITableViewController {
                 }, completion: nil)
             }
         }
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
     }
     
     //MARK: - Timer

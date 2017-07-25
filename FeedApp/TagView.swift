@@ -21,11 +21,11 @@ class TagLabel: UILabel {
     }
     
     convenience init(text: String,
-                     font: UIFont = UIFont .systemFont(ofSize: 23)) {
+                     font: UIFont = UIFont.systemFont(ofSize: 21)) {
         var size = (text as NSString)
                     .size(attributes: [NSFontAttributeName : font])
-        size.width  += 20
-        size.height += 20
+        size.width  += 16
+        size.height += 16
         self.init(frame: CGRect(origin: .zero, size: size))
         self.font = font
         self.text = text
@@ -33,9 +33,10 @@ class TagLabel: UILabel {
     }
     
     func setup() {
-        backgroundColor = .white
+        backgroundColor = UIColor.groupTableViewBackground
+        textColor = UIColor.lightGray
         clipsToBounds = true
-        layer.cornerRadius = bounds.height / 2
+        layer.cornerRadius = min(bounds.height / 2, bounds.width / 2)
     }
     
 }

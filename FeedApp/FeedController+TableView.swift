@@ -55,3 +55,19 @@ extension NewsFeedController  {
     }
     
 }
+
+extension NewsFeedController : UITableViewDataSourcePrefetching {
+    
+    func tableView(_ tableView: UITableView, prefetchRowsAt indexPaths: [IndexPath]) {
+        for indexPath in indexPaths {
+            let cell = tableView.dequeueReusableCell(withIdentifier: Constants.CellIdentifer.tableCell, for: indexPath)
+            let newsItem = fetchedResultsControllerTV.object(at: indexPath)
+            configureCellForTableView(cell, withNews: newsItem)
+        }
+    }
+    
+    
+    func tableView(_ tableView: UITableView, cancelPrefetchingForRowsAt indexPaths: [IndexPath]) {
+        
+    }
+}
