@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		78826733ABC217DC63615B72 /* Pods_FeedApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 43D4CEF1028C5EA15664E998 /* Pods_FeedApp.framework */; };
+		B231ACCC1F275F4300BA207C /* TagView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B231ACCB1F275F4300BA207C /* TagView.swift */; };
 		B276DA541F134971005093BD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B276DA531F134971005093BD /* AppDelegate.swift */; };
 		B276DA561F134971005093BD /* NewsFeedController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B276DA551F134971005093BD /* NewsFeedController.swift */; };
 		B276DA591F134971005093BD /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B276DA571F134971005093BD /* Main.storyboard */; };
@@ -31,6 +32,7 @@
 		43D4CEF1028C5EA15664E998 /* Pods_FeedApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_FeedApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		94CF19851AE3035A05A36DF2 /* Pods-FeedApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FeedApp.release.xcconfig"; path = "Pods/Target Support Files/Pods-FeedApp/Pods-FeedApp.release.xcconfig"; sourceTree = "<group>"; };
 		B199FA1ED508D707F607935C /* Pods-FeedApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FeedApp.debug.xcconfig"; path = "Pods/Target Support Files/Pods-FeedApp/Pods-FeedApp.debug.xcconfig"; sourceTree = "<group>"; };
+		B231ACCB1F275F4300BA207C /* TagView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TagView.swift; sourceTree = "<group>"; };
 		B276DA501F134971005093BD /* FeedApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FeedApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B276DA531F134971005093BD /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B276DA551F134971005093BD /* NewsFeedController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsFeedController.swift; sourceTree = "<group>"; };
@@ -120,6 +122,7 @@
 			isa = PBXGroup;
 			children = (
 				B276DA6C1F136062005093BD /* FeedTableCell.swift */,
+				B231ACCB1F275F4300BA207C /* TagView.swift */,
 				B276DA821F14D611005093BD /* FeedCollectionCell.swift */,
 			);
 			name = Views;
@@ -307,6 +310,7 @@
 				B276DA6B1F136023005093BD /* Helpers.swift in Sources */,
 				B276DA6F1F13608F005093BD /* NewsFeedItem.swift in Sources */,
 				B276DA6D1F136062005093BD /* FeedTableCell.swift in Sources */,
+				B231ACCC1F275F4300BA207C /* TagView.swift in Sources */,
 				B276DA7E1F14D181005093BD /* FeedController+CoreData.swift in Sources */,
 				B276DA691F135F9F005093BD /* NewsViewController.swift in Sources */,
 				B276DA811F14D1B7005093BD /* FeedController+CollectionView.swift in Sources */,
