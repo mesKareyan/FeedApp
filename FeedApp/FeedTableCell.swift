@@ -35,12 +35,14 @@ class FeedTableCell: UITableViewCell {
             thumbnailImageView.hnk_setImageFromURL(url, placeholder: #imageLiteral(resourceName: "empty"))
         }
         // add tag views
-        addTagViews()
+        configureTagViews(forWidth: tagsContainerView.bounds.width)
     }
     
-    func addTagViews() {
+    func configureTagViews(forWidth containerWidth: CGFloat) {
         
-        tagsContainerView.subviews.forEach { subview in subview.removeFromSuperview() }
+        tagsContainerView.subviews.forEach { subview in subview.removeFromSuperview()
+        }
+        
         guard let text = news.title else { return }
         
         let words = (text as NSString).getTokens()
@@ -59,7 +61,7 @@ class FeedTableCell: UITableViewCell {
             //shift with label width
             xPosition += tagView.bounds.width + inset
             //add new line
-            if tagsContainerView.frame.width - xPosition < tagView.bounds.width + 2 * inset {
+            if containerWidth - xPosition < tagView.bounds.width + 2 * inset {
                 xPosition = inset
                 yPosition += tagView.bounds.height + inset
                 colomnCount += 1

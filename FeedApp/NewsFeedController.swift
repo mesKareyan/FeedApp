@@ -82,7 +82,7 @@ class NewsFeedController: UITableViewController {
         loadingInProgress = true
         let page = tableView.numberOfRows(inSection: 0) / Constants.newsPageCount + 1
         SVProgressHUD.show()
-        tableView.isScrollEnabled = false
+        tableView.isUserInteractionEnabled = false
         NetworkManager.shared.getNews(atPage: page) { result in
             switch result {
             case .fail(with: let error):
@@ -93,7 +93,7 @@ class NewsFeedController: UITableViewController {
                 self.loadingInProgress = false
             }
             SVProgressHUD.dismiss()
-            self.tableView.isScrollEnabled = true
+            self.tableView.isUserInteractionEnabled = true
         }
     }
     
@@ -229,6 +229,12 @@ class NewsFeedController: UITableViewController {
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        let cells = tableView.visibleCells as! [FeedTableCell]
+        cells.forEach{ cell in
+            cell.configureTagViews(forWidth: size.width)
+            cell.layoutIfNeeded()
+        }
     }
     
     //MARK: - Timer
