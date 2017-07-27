@@ -94,8 +94,9 @@ class NewsFeedController: UITableViewController {
         guard !loadingInProgress else {
             return
         }
+        let rowCount = tableView.numberOfRows(inSection: 0)
+        let page = rowCount > 0 ? rowCount / Constants.newsPageCount + 1 : 1
         loadingInProgress = true
-        let page = tableView.numberOfRows(inSection: 0) / Constants.newsPageCount + 1
         SVProgressHUD.show()
         tableView.isUserInteractionEnabled = false
         NetworkManager.shared.getNews(atPage: page) { result in

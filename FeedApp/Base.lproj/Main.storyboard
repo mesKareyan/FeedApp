@@ -170,11 +170,11 @@
                                             </constraints>
                                         </imageView>
                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Psp-n4-8cD" userLabel="Details label background">
-                                            <rect key="frame" x="0.0" y="256" width="320" height="133.5"/>
+                                            <rect key="frame" x="0.0" y="256" width="320" height="141.5"/>
                                             <color key="backgroundColor" red="1" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
                                         </view>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="The" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumFontSize="5" translatesAutoresizingMaskIntoConstraints="NO" id="jPr-XQ-n3j">
-                                            <rect key="frame" x="8" y="256" width="304" height="133.5"/>
+                                            <rect key="frame" x="8" y="256" width="304" height="141.5"/>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                             <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="22"/>
                                             <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -202,7 +202,7 @@
                                         <constraint firstAttribute="trailing" secondItem="0Jj-Na-i5M" secondAttribute="trailing" id="cVr-GR-jcn"/>
                                         <constraint firstItem="Psp-n4-8cD" firstAttribute="leading" secondItem="hu6-q8-aq4" secondAttribute="leading" id="dwm-b1-7ma"/>
                                         <constraint firstAttribute="trailing" secondItem="Psp-n4-8cD" secondAttribute="trailing" id="haf-ZL-v8G"/>
-                                        <constraint firstItem="Sl7-9N-kJb" firstAttribute="top" secondItem="jPr-XQ-n3j" secondAttribute="bottom" constant="8" symbolic="YES" id="kBk-VA-X1C"/>
+                                        <constraint firstItem="Sl7-9N-kJb" firstAttribute="top" secondItem="jPr-XQ-n3j" secondAttribute="bottom" id="kBk-VA-X1C"/>
                                         <constraint firstItem="Sl7-9N-kJb" firstAttribute="leading" secondItem="hu6-q8-aq4" secondAttribute="leading" id="pTV-gT-ANT"/>
                                         <constraint firstItem="jPr-XQ-n3j" firstAttribute="top" secondItem="AU0-Ov-Wbd" secondAttribute="bottom" constant="8" symbolic="YES" id="sFM-u7-klp"/>
                                         <constraint firstItem="jPr-XQ-n3j" firstAttribute="leading" secondItem="hu6-q8-aq4" secondAttribute="leadingMargin" id="y49-9P-Xcv"/>

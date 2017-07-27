@@ -38,6 +38,7 @@ class FeedTableCell: UITableViewCell {
         configureTagViews(forWidth: tagsContainerView.bounds.width)
     }
     
+    //MARK: - Tag views
     func configureTagViews(forWidth containerWidth: CGFloat) {
         
         tagsContainerView.subviews.forEach { subview in subview.removeFromSuperview()
@@ -51,26 +52,38 @@ class FeedTableCell: UITableViewCell {
         var xPosition:CGFloat = inset
         var yPosition:CGFloat = inset
     
-        var tagsContainerHeightConstant:CGFloat = 0
+        var tagsContainerHeightConstant:CGFloat =  inset
         var colomnCount = 0
         
-        for word in words {
-            let tagView = TagLabel(text: word)
-            tagsContainerView.addSubview(tagView)
-            tagView.frame.origin = CGPoint(x: xPosition, y: yPosition)
-            //shift with label width
-            xPosition += tagView.bounds.width + inset
-            //add new line
-            if containerWidth - xPosition < tagView.bounds.width + 2 * inset {
-                xPosition = inset
-                yPosition += tagView.bounds.height + inset
-                colomnCount += 1
-                tagsContainerHeightConstant = yPosition + 2 * inset
+        for (index, currentWord) in words.enumerated() {
+            
+            let currentTagView = TagLabel(text: currentWord)
+            currentTagView.frame.origin = CGPoint(x: xPosition, y: yPosition)
+            tagsContainerView.addSubview(currentTagView)
+            
+            if index == 0 {
+                tagsContainerHeightConstant += currentTagView.bounds.height
             }
-            tagsContainerHeightConstant +=  2 * inset
+            
+            guard  index < words.count - 1  else {
+                break
+            }
+            
+            let nextWord    =  words[index + 1]
+            let nextTagView = TagLabel(text: nextWord)
+            
+            //calculate next tavView frame
+            //shift with label width
+            xPosition += currentTagView.bounds.width + inset
+            //add new line
+            if xPosition + nextTagView.bounds.width + inset >  containerWidth {
+                xPosition = inset
+                yPosition += currentTagView.bounds.height + inset
+                colomnCount += 1
+                tagsContainerHeightConstant = yPosition + nextTagView.bounds.height
+            }
         }
-        tagsContainerHeightConstant +=  inset
-        tagsContainerHeightConstraint.constant = tagsContainerHeightConstant
+        tagsContainerHeightConstraint.constant = tagsContainerHeightConstant + inset
         layoutIfNeeded()
     }
 }
