@@ -120,7 +120,9 @@ class NetworkManager {
                 return
             }
             let result = ApiRequestSerialization.resultFor(response: response, data: data)
-            completion(result)
+            DispatchQueue.main.async {
+                completion(result)
+            }
         }
         task.resume()
     }

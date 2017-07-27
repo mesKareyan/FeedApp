@@ -18,11 +18,6 @@ extension NewsFeedController  {
         }
     }
     
-    func handleRefresh(refreshControl: UIRefreshControl) {
-        self.tableView.reloadData()
-        refreshControl.endRefreshing()
-    }
-    
     // MARK: - Table View Delegate
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -65,7 +60,6 @@ extension NewsFeedController : UITableViewDataSourcePrefetching {
             configureCellForTableView(cell, withNews: newsItem)
         }
     }
-    
     
     func tableView(_ tableView: UITableView, cancelPrefetchingForRowsAt indexPaths: [IndexPath]) {
         

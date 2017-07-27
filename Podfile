@@ -6,5 +6,6 @@ target 'FeedApp' do
   pod 'HanekeSwift', :git => 'https://github.com/Haneke/HanekeSwift.git', :branch => 'feature/swift-3'
   pod 'SVProgressHUD'
   pod 'ReachabilitySwift', '~> 3'
+  pod 'WatchdogInspector'
 
 end

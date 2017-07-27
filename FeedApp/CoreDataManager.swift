@@ -40,6 +40,7 @@ class CoreDataManager {
         fetch.predicate = predicate;
         
         //check for dulicates
+        
         if let count = try? context.count(for: fetch),
             count > 0 {
             return
@@ -61,14 +62,7 @@ class CoreDataManager {
         newsEntity.apiURL   = newsItem.apiUrl
         newsEntity.webURL   = newsItem.webUrl
         newsEntity.feedItem = newsFeedEntity
-                
-        // Save the context.
-        do {
-            try context.save()
-        } catch {
-            let nserror = error as NSError
-            fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-        }
+    
     }
     
     // MARK: - Core Data stack

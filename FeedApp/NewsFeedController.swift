@@ -13,7 +13,12 @@ import SVProgressHUD
 
 class NewsFeedController: UITableViewController {
     
-    var managedObjectContext: NSManagedObjectContext? = nil
+    var mainManagedObjectContext = CoreDataManager.shared.persistentContainer.viewContext
+//    lazy var backgroundManagedContext: NSManagedObjectContext = {
+//        let context = CoreDataManager.shared.persistentContainer.newBackgroundContext()
+//        return context
+//    } ()
+    
     var fetchedResultsControllerTV: NSFetchedResultsController<NewsFeedEntity>!
     var loadingInProgress = false
     
@@ -31,6 +36,9 @@ class NewsFeedController: UITableViewController {
         
         super.viewDidLoad()
         
+        NotificationCenter.default.addObserver(self, selector: #selector(contextDidSave(notification:)), name: NSNotification.Name.NSManagedObjectContextDidSave, object: nil)
+
+        
         tableView.prefetchDataSource = self
         
         (tableView as UIScrollView).delegate = self
@@ -44,6 +52,13 @@ class NewsFeedController: UITableViewController {
         
         startTimer()
         
+    }
+    
+    func contextDidSave(notification: Notification) {
+        let context = notification.object as! NSManagedObjectContext
+        if context != mainManagedObjectContext {
+            mainManagedObjectContext.mergeChanges(fromContextDidSave: notification)
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -107,7 +122,6 @@ class NewsFeedController: UITableViewController {
     
     func initializeFetchedResultsControllerForTV() {
         
-        self.managedObjectContext = CoreDataManager.shared.persistentContainer.viewContext
         let fetchRequest: NSFetchRequest<NewsFeedEntity> = NewsFeedEntity.fetchRequest()
         
         // Set the batch size to a suitable number.
@@ -120,21 +134,18 @@ class NewsFeedController: UITableViewController {
         
         // Edit the section name key path and cache name if appropriate.
         // nil for section name key path means "no sections".
-        fetchedResultsControllerTV = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.managedObjectContext!, sectionNameKeyPath:nil, cacheName: nil)
+        fetchedResultsControllerTV = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: mainManagedObjectContext, sectionNameKeyPath:nil, cacheName: nil)
         
         fetchedResultsControllerTV.delegate = self
-        
-        do {
-            try fetchedResultsControllerTV.performFetch()
-        } catch {
-            fatalError("Failed to initialize FetchedResultsController: \(error)")
-        }
-        
+            do {
+                try self.fetchedResultsControllerTV.performFetch()
+            } catch {
+                fatalError("Failed to initialize FetchedResultsController: \(error)")
+            }        
     }
     
     func initializeFetchedResultsControllerForCV() {
         
-        self.managedObjectContext = CoreDataManager.shared.persistentContainer.viewContext
         let fetchRequest: NSFetchRequest<NewsFeedEntity> = NewsFeedEntity.fetchRequest()
         
         // Set the batch size to a suitable number.
@@ -148,7 +159,7 @@ class NewsFeedController: UITableViewController {
         
         // Edit the section name key path and cache name if appropriate.
         // nil for section name key path means "no sections".
-        fetchedResultsControllerCV = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.managedObjectContext!, sectionNameKeyPath:nil, cacheName: nil)
+        fetchedResultsControllerCV = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: mainManagedObjectContext, sectionNameKeyPath:nil, cacheName: nil)
         
         fetchedResultsControllerCV.delegate = self
         
