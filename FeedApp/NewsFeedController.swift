@@ -82,6 +82,7 @@ class NewsFeedController: UITableViewController {
                 self.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.red]
                 self.navigationController?.navigationBar.barTintColor = UIColor.white
                 self.navigationController?.navigationBar.barStyle = .default
+                self.navigationController!.navigationBar.tintColor = .appRed
         }, completion: nil)
         if isInitailContentLoaded {
             SVProgressHUD.dismiss()
@@ -141,6 +142,10 @@ class NewsFeedController: UITableViewController {
         let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Done", style: .default, handler: nil))
         present(alert, animated: true, completion: nil)
+    }
+    
+    @IBAction func topButtonTapped(_ sender: UIBarButtonItem) {
+        tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
     }
     
     //MARK: - FetchedResultsController

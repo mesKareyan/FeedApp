@@ -229,6 +229,11 @@
                     <toolbarItems/>
                     <navigationItem key="navigationItem" title="The Guardian" id="wc2-cS-0HV">
                         <barButtonItem key="backBarButtonItem" title=" " id="DY0-qy-rIO"/>
+                        <barButtonItem key="leftBarButtonItem" image="collapse Arrow" id="IUa-Gg-bBF">
+                            <connections>
+                                <action selector="topButtonTapped:" destination="JGa-K9-lkf" id="h9N-ah-t6V"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
@@ -316,6 +321,7 @@
     <resources>
         <image name="New Moon Filled" width="12" height="12"/>
         <image name="cancel" width="22" height="22"/>
+        <image name="collapse Arrow" width="22" height="22"/>
         <image name="empty" width="900" height="450"/>
     </resources>
     <inferredMetricsTieBreakers>
