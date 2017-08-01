@@ -108,21 +108,21 @@ class NetworkManager {
         request.httpMethod = "GET"
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard error == nil else {
-                DispatchQueue.main.async {
+//                DispatchQueue.main.async {
                     completion(.fail(with: error!))
-                }
+//                }
                 return
             }
             guard let data = data else {
-                DispatchQueue.main.async {
+//                DispatchQueue.main.async {
                     completion(.fail(with: InternalError.badResponse))
-                }
+//                }
                 return
             }
             let result = ApiRequestSerialization.resultFor(response: response, data: data)
-            DispatchQueue.main.async {
+//            DispatchQueue.main.async {
                 completion(result)
-            }
+//            }
         }
         task.resume()
     }

@@ -7,5 +7,6 @@ target 'FeedApp' do
   pod 'SVProgressHUD'
   pod 'ReachabilitySwift', '~> 3'
   pod 'WatchdogInspector'
+  pod 'NVActivityIndicatorView'
 
 end

@@ -12,10 +12,21 @@ import CoreData
 class CoreDataManager {
     
     static let shared = CoreDataManager()
+    let backgroundContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+    
     private init() {}
     
     func saveNews(items news: [NewsFeedItem]) {
-        news.forEach { insertNewsObjectsFor(newsItem:  $0)}
+        // Create new context for asynchronous execution with privateQueueConcurrencyType
+        // Add your viewContext as parent, therefore changes are pushed to the viewContext, instead of the persistent store coordinator
+        let viewContext = self.persistentContainer.viewContext
+        backgroundContext.parent = viewContext
+        backgroundContext.perform {
+            news.forEach {
+                self.insertNewsObjectsFor(newsItem: $0, toContext: self.backgroundContext)
+            }
+            try! self.backgroundContext.save()
+        }
     }
     
     func makeNewsRead(news: NewsFeedEntity) {
@@ -29,12 +40,12 @@ class CoreDataManager {
         CoreDataManager.shared.saveContext()
     }
     
-    private func insertNewsObjectsFor(newsItem: NewsFeedItem) {
+    private func insertNewsObjectsFor(newsItem: NewsFeedItem, toContext context: NSManagedObjectContext) {
         //use shareurl as id for DB
         guard !newsItem.id.isEmpty else {
             return
         }
-        let context = self.persistentContainer.viewContext
+        
         let fetch: NSFetchRequest<NewsFeedEntity> = NewsFeedEntity.fetchRequest()
         let predicate   = NSPredicate(format: "id == %@", newsItem.id)
         fetch.predicate = predicate;

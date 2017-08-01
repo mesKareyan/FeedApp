@@ -40,7 +40,7 @@ class NewsDetailViewController: UIViewController {
         UIView.animate(withDuration: 0.3) {
             self.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.white]
             self.navigationController?.navigationBar.tintColor = UIColor.white
-            self.navigationController?.navigationBar.barTintColor = UIColor.red
+            self.navigationController?.navigationBar.barTintColor = UIColor.appRed
             self.navigationController?.navigationBar.barStyle = .black
         }
     }

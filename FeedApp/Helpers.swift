@@ -6,7 +6,7 @@
 //  Copyright © 2017 none. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 extension Date {
     
@@ -41,6 +41,14 @@ extension String {
     
     var shortNSDate: NSDate? {
         return self.shortDate as NSDate?
+    }
+    
+}
+
+extension UIColor {
+
+    static var appRed: UIColor {
+        return UIColor(red: 255.0 / 255.0, green: 51.0/255.0, blue: 52/255.0, alpha: 1.0)
     }
     
 }

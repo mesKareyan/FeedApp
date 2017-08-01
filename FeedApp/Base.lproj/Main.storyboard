@@ -15,7 +15,7 @@
         <scene sceneID="cUw-u8-ADb">
             <objects>
                 <tableViewController title="Master" clearsSelectionOnViewWillAppear="NO" id="JGa-K9-lkf" customClass="NewsFeedController" customModule="FeedApp" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="408" sectionHeaderHeight="22" sectionFooterHeight="22" id="wvs-FR-nij">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="408" sectionHeaderHeight="22" sectionFooterHeight="22" id="wvs-FR-nij">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -115,12 +115,12 @@
                             </constraints>
                         </view>
                         <view key="tableFooterView" contentMode="scaleToFill" id="eUI-BH-UeM" userLabel="Footer">
-                            <rect key="frame" x="0.0" y="650" width="320" height="214"/>
+                            <rect key="frame" x="0.0" y="650" width="320" height="500"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                            <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                            <color key="backgroundColor" cocoaTouchSystemColor="scrollViewTexturedBackgroundColor"/>
                         </view>
                         <prototypes>
-                            <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="tableCell" rowHeight="408" id="gHg-WB-3Z5" customClass="FeedTableCell" customModule="FeedApp" customModuleProvider="target">
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="tableCell" rowHeight="408" id="gHg-WB-3Z5" customClass="FeedTableCell" customModule="FeedApp" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="242" width="320" height="408"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="gHg-WB-3Z5" id="hu6-q8-aq4">
@@ -233,11 +233,12 @@
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="collectionView" destination="C6e-ku-dGU" id="fNU-ts-44B"/>
+                        <outlet property="footerView" destination="eUI-BH-UeM" id="jmk-xt-7JH"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="EY0-QG-TpB" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1645.5999999999999" y="-631.0344827586207"/>
+            <point key="canvasLocation" x="1644.375" y="-631.69014084507046"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="1Gc-3K-dER">

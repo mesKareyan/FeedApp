@@ -10,24 +10,30 @@ import UIKit
 import CoreData
 import Haneke
 import SVProgressHUD
+import NVActivityIndicatorView
+import ReachabilitySwift
 
 class NewsFeedController: UITableViewController {
+
     
     var mainManagedObjectContext = CoreDataManager.shared.persistentContainer.viewContext
-//    lazy var backgroundManagedContext: NSManagedObjectContext = {
-//        let context = CoreDataManager.shared.persistentContainer.newBackgroundContext()
-//        return context
-//    } ()
+
+    @IBOutlet weak var footerView: UIView!
     
     var fetchedResultsControllerTV: NSFetchedResultsController<NewsFeedEntity>!
-    var loadingInProgress = false
+    var isLoadingInProgress     = false
+    var isInitailContentLoaded  = false
+    var isNeedToLoadNextPage    = false
+    var progressBarConstraint: NSLayoutConstraint!
     
     //colelctionView
     @IBOutlet weak var collectionView: UICollectionView!
     var  shouldReloadCollectionView = false
     var fetchedResultsControllerCV: NSFetchedResultsController<NewsFeedEntity>!
     var blockOperation: BlockOperation!
-    
+    let reachability = Reachability()!
+    var timer: Timer!
+
     var headerViewHeight: CGFloat = 220.0
 
     //MARK: - View controller life cycle
@@ -36,12 +42,10 @@ class NewsFeedController: UITableViewController {
         
         super.viewDidLoad()
         
-        NotificationCenter.default.addObserver(self, selector: #selector(contextDidSave(notification:)), name: NSNotification.Name.NSManagedObjectContextDidSave, object: nil)
-
-        
         tableView.prefetchDataSource = self
         
         (tableView as UIScrollView).delegate = self
+        tableView.decelerationRate = UIScrollViewDecelerationRateFast
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 500
         
@@ -50,15 +54,25 @@ class NewsFeedController: UITableViewController {
         
         collectionView.contentOffset = CGPoint(x: (collectionView.bounds.width - (collectionView.collectionViewLayout as! UICollectionViewFlowLayout).itemSize.width) / CGFloat(2.0), y: 0)
         
-        startTimer()
+        self.loadLastNews(showHUD: true)
         
-    }
-    
-    func contextDidSave(notification: Notification) {
-        let context = notification.object as! NSManagedObjectContext
-        if context != mainManagedObjectContext {
-            mainManagedObjectContext.mergeChanges(fromContextDidSave: notification)
-        }
+        // add Footer progress bar
+        footerView.bounds.size.height = 0
+        let frame = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 50)
+        footerView.backgroundColor = .appRed
+        let progressBar = NVActivityIndicatorView(frame: frame,
+                                                  type: .ballPulseSync,
+                                                  color: .white,
+                                                  padding: 0)
+        footerView.addSubview(progressBar)
+        progressBar.translatesAutoresizingMaskIntoConstraints = false
+        progressBar.leftAnchor.constraint(equalTo: tableView.leftAnchor).isActive = true
+        progressBar.rightAnchor.constraint(equalTo: tableView.rightAnchor).isActive = true
+        progressBar.topAnchor.constraint(equalTo: footerView.topAnchor).isActive = true
+        progressBarConstraint = progressBar.heightAnchor.constraint(equalToConstant: 0)
+        progressBarConstraint.isActive = true
+        progressBar.startAnimating()
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -69,7 +83,9 @@ class NewsFeedController: UITableViewController {
                 self.navigationController?.navigationBar.barTintColor = UIColor.white
                 self.navigationController?.navigationBar.barStyle = .default
         }, completion: nil)
-        SVProgressHUD.dismiss()
+        if isInitailContentLoaded {
+            SVProgressHUD.dismiss()
+        }
     }
     
     //MARK: Initialization
@@ -80,36 +96,44 @@ class NewsFeedController: UITableViewController {
         }
         NetworkManager.shared.getNewestNews { result in
             SVProgressHUD.dismiss()
+            self.isInitailContentLoaded = true
             switch result {
             case .fail(with: let error):
                 self.showAlert(for: error)
             case .success(with: let data):
                 let news = data as! [NewsFeedItem]
                 CoreDataManager.shared.saveNews(items: news)
+                if showHUD {
+                    self.startTimer()
+                }
+                SVProgressHUD.dismiss()
             }
-       }
+        }
     }
     
     func loadNewFromNextPage() {
-        guard !loadingInProgress else {
+        guard !isLoadingInProgress else {
             return
         }
+        isNeedToLoadNextPage = false
         let rowCount = tableView.numberOfRows(inSection: 0)
         let page = rowCount > 0 ? rowCount / Constants.newsPageCount + 1 : 1
-        loadingInProgress = true
-        SVProgressHUD.show()
-        tableView.isUserInteractionEnabled = false
+        isLoadingInProgress = true
         NetworkManager.shared.getNews(atPage: page) { result in
+            self.isLoadingInProgress = false
             switch result {
             case .fail(with: let error):
-                self.showAlert(for: error)
+                DispatchQueue.main.async {
+                    self.showAlert(for: error)
+                }
             case .success(with: let data):
                 let news = data as! [NewsFeedItem]
                 CoreDataManager.shared.saveNews(items: news)
-                self.loadingInProgress = false
+                DispatchQueue.main.async {
+                    self.footerView.frame.size.height = 100
+                    self.tableView.backgroundColor = .appRed
+                }
             }
-            SVProgressHUD.dismiss()
-            self.tableView.isUserInteractionEnabled = true
         }
     }
     
@@ -138,6 +162,7 @@ class NewsFeedController: UITableViewController {
         fetchedResultsControllerTV = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: mainManagedObjectContext, sectionNameKeyPath:nil, cacheName: nil)
         
         fetchedResultsControllerTV.delegate = self
+        
             do {
                 try self.fetchedResultsControllerTV.performFetch()
             } catch {
@@ -181,10 +206,45 @@ class NewsFeedController: UITableViewController {
         let currentOffset = scrollView.contentOffset.y
         let maximumOffset = scrollView.contentSize.height - scrollView.frame.size.height
         let deltaOffset = maximumOffset - currentOffset
-        if deltaOffset <= 0 { //self.view.bounds.width
+        //check velocity
+        let velocity = Double(scrollView.panGestureRecognizer.velocity(in:  view).y)
+        let isScrolledSlowlyToBottom = (-50.0..<0).contains(velocity)
+        if  isScrolledSlowlyToBottom && deltaOffset <= 0 {
+                loadNewFromNextPage()
+        }
+        if velocity < -50 && deltaOffset <= 0{
+            isNeedToLoadNextPage = true
+        }
+    }
+
+    override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        guard scrollView == tableView else {
+            return
+        }
+        //check velocity
+        let velocity = Double(scrollView.panGestureRecognizer.velocity(in:  view).y)
+        let isScrolledSlowlyToBottom = (-50.0...0).contains(velocity)
+        guard isScrolledSlowlyToBottom else {
+            return
+        }
+        let position = footerView.superview!.convert(footerView.frame.origin , to: nil).y
+        let screenHeight = view.bounds.height
+        let positionFromBottom = screenHeight - position
+        
+        if isNeedToLoadNextPage || positionFromBottom > 30 {
             loadNewFromNextPage()
         }
     }
+    
+    
+    override func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+    }
+    
+    override func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        if !decelerate {
+        }
+    }
+    
     
     // MARK: - Segues
     
@@ -252,11 +312,31 @@ class NewsFeedController: UITableViewController {
     //MARK: - Timer
     
     func startTimer() {
-        let timer  = Timer.scheduledTimer(withTimeInterval: 30,
+        timer  = Timer.scheduledTimer(withTimeInterval: 30,
                                                    repeats: true) { timer in
                 self.loadLastNews(showHUD: false)
         }
         timer.fire()
+    }
+    
+}
+
+//MARK: - Reachinlity
+extension NewsFeedController {
+    
+    func startReachibility() {
+        
+        reachability.whenReachable = { [unowned self] reachability in
+            // this is called on a background thread
+            DispatchQueue.main.async {
+                self.startTimer()
+            }
+        }
+        
+        reachability.whenUnreachable = { [unowned self] reachability in
+            self.timer.invalidate()
+            self.timer = nil
+        }
     }
     
 }
