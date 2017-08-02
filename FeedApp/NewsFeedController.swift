@@ -45,7 +45,7 @@ class NewsFeedController: UITableViewController {
         tableView.prefetchDataSource = self
         
         (tableView as UIScrollView).delegate = self
-        tableView.decelerationRate = UIScrollViewDecelerationRateFast
+//        tableView.decelerationRate = UIScrollViewDecelerationRateFast
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 500
         
@@ -158,9 +158,9 @@ class NewsFeedController: UITableViewController {
         fetchRequest.fetchBatchSize = 20
         
         // Edit the sort key as appropriate.
-        let sortDescriptor = NSSortDescriptor(key: "date", ascending: false)
+        let sort = NSSortDescriptor(key: #keyPath(NewsFeedEntity.date), ascending: false)
         
-        fetchRequest.sortDescriptors = [sortDescriptor]
+        fetchRequest.sortDescriptors = [sort]
         
         // Edit the section name key path and cache name if appropriate.
         // nil for section name key path means "no sections".
@@ -214,7 +214,8 @@ class NewsFeedController: UITableViewController {
         //check velocity
         let velocity = Double(scrollView.panGestureRecognizer.velocity(in:  view).y)
         let isScrolledSlowlyToBottom = (-50.0..<0).contains(velocity)
-        if  isScrolledSlowlyToBottom && deltaOffset <= 0 {
+        let viewWidth = view.bounds.width
+        if  deltaOffset <= 100 * viewWidth {
                 loadNewFromNextPage()
         }
         if velocity < -50 && deltaOffset <= 0{

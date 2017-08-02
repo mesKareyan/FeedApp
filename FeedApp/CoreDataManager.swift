@@ -17,8 +17,6 @@ class CoreDataManager {
     private init() {}
     
     func saveNews(items news: [NewsFeedItem]) {
-        // Create new context for asynchronous execution with privateQueueConcurrencyType
-        // Add your viewContext as parent, therefore changes are pushed to the viewContext, instead of the persistent store coordinator
         let viewContext = self.persistentContainer.viewContext
         backgroundContext.parent = viewContext
         backgroundContext.perform {

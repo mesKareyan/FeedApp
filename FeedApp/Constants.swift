@@ -27,6 +27,6 @@ struct Constants {
         static let showFirstItemForIPad: TimeInterval = 0.4
     }
     
-    static let newsPageCount = 10
+    static let newsPageCount = 50
     
 }

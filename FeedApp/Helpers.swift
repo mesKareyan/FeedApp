@@ -43,6 +43,18 @@ extension String {
         return self.shortDate as NSDate?
     }
     
+    var dateTimeInterval: TimeInterval? {
+        return self.shortDate?.timeIntervalSince1970
+    }
+    
+}
+
+extension TimeInterval {
+    
+    var date: Date {
+        return Date(timeIntervalSince1970: self)
+    }
+    
 }
 
 extension UIColor {
