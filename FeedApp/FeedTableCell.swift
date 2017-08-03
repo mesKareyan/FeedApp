@@ -20,21 +20,23 @@ class FeedTableCell: UITableViewCell {
     
     var news: NewsFeedItemRealm!
     var imageURLSting: String!
+
     
     func configure(for newsEntity: NewsFeedItemRealm) {
-        
+        thumbnailImageView.sd_setShowActivityIndicatorView(true)
+        thumbnailImageView.sd_setIndicatorStyle(.gray)
         news = newsEntity
         topLabel.text      = newsEntity.category
         detailsLabel.text  = newsEntity.title
         dateLabel.text     = newsEntity.date?.shortString
-        //unreadCircleView.isHidden = newsEntity.isRead!
+        unreadCircleView.isHidden = newsEntity.read
         tagsContainerView.backgroundColor = UIColor.white
         imageURLSting   = newsEntity.thumbnail
         if let urlString = newsEntity.thumbnail,
             !urlString.isEmpty
         {
             let url = URL(string: urlString)!
-            thumbnailImageView.hnk_setImageFromURL(url, placeholder: #imageLiteral(resourceName: "empty"))
+            thumbnailImageView.sd_setImage(with: url)
         }
         // add tag views
         configureTagViews(forWidth: tagsContainerView.bounds.width)

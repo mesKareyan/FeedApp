@@ -7,8 +7,7 @@
 //
 
 import UIKit
-import CoreData
-import Haneke
+import SDWebImage
 import SVProgressHUD
 import NVActivityIndicatorView
 import ReachabilitySwift
@@ -58,7 +57,7 @@ class NewsFeedController: UITableViewController {
         
         super.viewDidLoad()
         
-        tableView.prefetchDataSource = self
+        //tableView.prefetchDataSource = self
         
         observeRealmChanges()
         

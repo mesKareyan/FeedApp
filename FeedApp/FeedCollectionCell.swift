@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Haneke
+import SDWebImage
 
 class FeedCollectionCell: UICollectionViewCell {
     
@@ -58,21 +58,24 @@ class FeedCollectionCell: UICollectionViewCell {
         layer.shadowOpacity = 1.0
         layer.masksToBounds = false
         layer.shadowPath = UIBezierPath(roundedRect: self.containerView.frame, cornerRadius: self.containerView.layer.cornerRadius).cgPath
+
+        
     }
     
     @IBAction func closeButtonTaped(_ sender: UIButton) {
         RealmManager.makeNews(pinned: false, news: self.newsItem)
-        Shared.imageCache.removeAll()
     }
     
     func configure(for newsEntity: NewsFeedItemRealm) {
         newsItem = newsEntity
         detailsLabel.text  = newsEntity.title
+        thumbnailImageView.sd_setShowActivityIndicatorView(true)
+        thumbnailImageView.sd_setIndicatorStyle(.gray)
         if let urlString = newsEntity.thumbnail,
             !urlString.isEmpty
         {
             let url = URL(string: urlString)!
-            thumbnailImageView.hnk_setImageFromURL(url, placeholder: #imageLiteral(resourceName: "empty"))
+            thumbnailImageView.sd_setImage(with: url)
         }
     }
     
