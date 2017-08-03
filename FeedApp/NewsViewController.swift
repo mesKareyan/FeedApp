@@ -9,6 +9,7 @@
 import UIKit
 import SVProgressHUD
 import ReachabilitySwift
+import RealmSwift
 
 class NewsDetailViewController: UIViewController {
     
@@ -17,10 +18,12 @@ class NewsDetailViewController: UIViewController {
     var isPageLoaded  = false
     @IBOutlet weak var newsWebView: UIWebView!
 
-    var newsItem: NewsItemEntity! {
+    var newsItem: NewsItemRealm! {
         didSet {
-            newsItem.feedItem?.isRead = true
-            CoreDataManager.shared.saveContext()
+            let realm = try! Realm()
+            realm.beginWrite()
+            newsItem.feedItem?.read = true
+            try! realm.commitWrite()
             // Update the view.
             if self.isViewLoaded {
                 configureView()
@@ -87,7 +90,7 @@ class NewsDetailViewController: UIViewController {
                 title = feedItem.category
                 navigationItem
                     .rightBarButtonItems![1]
-                    .isEnabled = !feedItem.isPinned
+                    .isEnabled = !feedItem.pinned
                 reloadPage()
             }
         }
@@ -104,8 +107,7 @@ class NewsDetailViewController: UIViewController {
     }
     
     @IBAction func pinButtonTapped(_ sender: UIBarButtonItem) {
-        self.newsItem.feedItem?.isPinned = true
-        CoreDataManager.shared.saveContext()
+        RealmManager.makeNews(pinned: true, news: newsItem.feedItem!)
         sender.isEnabled = false
     }
     
@@ -163,10 +165,11 @@ class NewsDetailViewController: UIViewController {
                 print(error)
             case .success(with: let body):
                 let bodyString = body as! String
-                CoreDataManager
-                    .shared
-                    .saveBody(bodyString,
-                              forNews: newsItem)
+                DispatchQueue.main.async {
+                    RealmManager
+                        .saveBody(bodyString,
+                                  forNews: newsItem)
+                }
             }
         })
     }

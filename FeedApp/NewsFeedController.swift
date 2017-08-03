@@ -12,15 +12,33 @@ import Haneke
 import SVProgressHUD
 import NVActivityIndicatorView
 import ReachabilitySwift
+import RealmSwift
 
 class NewsFeedController: UITableViewController {
+    
+    //Realm
+    
+    let realm = try! Realm()
+    
+    var notificationToken: NotificationToken? = nil
+    var pinnedItemsNotificationToken: NotificationToken? = nil
+
+    lazy var newsItems: Results<NewsFeedItemRealm> = {
+        self.realm.objects(NewsFeedItemRealm.self)
+    }()
+    
+    var pinnedNewsItems: Results<NewsFeedItemRealm>!
+    
+    func filterPinnedItems()  {
+       pinnedNewsItems = realm.objects(NewsFeedItemRealm.self)
+                                .filter("pinned == true")
+    }
+    
+    var blockOperation: BlockOperation!
 
     
-    var mainManagedObjectContext = CoreDataManager.shared.persistentContainer.viewContext
-
     @IBOutlet weak var footerView: UIView!
     
-    var fetchedResultsControllerTV: NSFetchedResultsController<NewsFeedEntity>!
     var isLoadingInProgress     = false
     var isInitailContentLoaded  = false
     var isNeedToLoadNextPage    = false
@@ -29,8 +47,6 @@ class NewsFeedController: UITableViewController {
     //colelctionView
     @IBOutlet weak var collectionView: UICollectionView!
     var  shouldReloadCollectionView = false
-    var fetchedResultsControllerCV: NSFetchedResultsController<NewsFeedEntity>!
-    var blockOperation: BlockOperation!
     let reachability = Reachability()!
     var timer: Timer!
 
@@ -44,19 +60,18 @@ class NewsFeedController: UITableViewController {
         
         tableView.prefetchDataSource = self
         
+        observeRealmChanges()
+        
         (tableView as UIScrollView).delegate = self
-//        tableView.decelerationRate = UIScrollViewDecelerationRateFast
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 500
-        
-        self.initializeFetchedResultsControllerForCV()
-        self.initializeFetchedResultsControllerForTV()
         
         collectionView.contentOffset = CGPoint(x: (collectionView.bounds.width - (collectionView.collectionViewLayout as! UICollectionViewFlowLayout).itemSize.width) / CGFloat(2.0), y: 0)
         
         self.loadLastNews(showHUD: true)
         
         // add Footer progress bar
+        tableView.decelerationRate = UIScrollViewDecelerationRateFast
         footerView.bounds.size.height = 0
         let frame = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 50)
         footerView.backgroundColor = .appRed
@@ -74,6 +89,7 @@ class NewsFeedController: UITableViewController {
         progressBar.startAnimating()
         
     }
+
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -87,27 +103,41 @@ class NewsFeedController: UITableViewController {
         if isInitailContentLoaded {
             SVProgressHUD.dismiss()
         }
+        filterPinnedItems()
+        collectionView.reloadData()
     }
     
+    deinit {
+        notificationToken?.stop()
+    }
+
     //MARK: Initialization
+    
+    func initializateNewsFromRealm() {
+        
+    }
     
     func loadLastNews(showHUD: Bool = false) {
         if showHUD {
             SVProgressHUD.show()
         }
         NetworkManager.shared.getNewestNews { result in
-            SVProgressHUD.dismiss()
             self.isInitailContentLoaded = true
             switch result {
             case .fail(with: let error):
-                self.showAlert(for: error)
+                DispatchQueue.main.async {
+                    self.showAlert(for: error)
+                }
             case .success(with: let data):
                 let news = data as! [NewsFeedItem]
-                CoreDataManager.shared.saveNews(items: news)
-                if showHUD {
-                    self.startTimer()
+                DispatchQueue.main.async {
+                    RealmManager.addNews(items: news)
+                    SVProgressHUD.dismiss()
+                    if showHUD {
+                        self.startTimer()
+                    }
+                    SVProgressHUD.dismiss()
                 }
-                SVProgressHUD.dismiss()
             }
         }
     }
@@ -129,10 +159,9 @@ class NewsFeedController: UITableViewController {
                 }
             case .success(with: let data):
                 let news = data as! [NewsFeedItem]
-                CoreDataManager.shared.saveNews(items: news)
+                RealmManager.addNews(items: news)
                 DispatchQueue.main.async {
                     self.footerView.frame.size.height = 100
-                    self.tableView.backgroundColor = .appRed
                 }
             }
         }
@@ -148,60 +177,6 @@ class NewsFeedController: UITableViewController {
         tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
     }
     
-    //MARK: - FetchedResultsController
-    
-    func initializeFetchedResultsControllerForTV() {
-        
-        let fetchRequest: NSFetchRequest<NewsFeedEntity> = NewsFeedEntity.fetchRequest()
-        
-        // Set the batch size to a suitable number.
-        fetchRequest.fetchBatchSize = 20
-        
-        // Edit the sort key as appropriate.
-        let sort = NSSortDescriptor(key: #keyPath(NewsFeedEntity.date), ascending: false)
-        
-        fetchRequest.sortDescriptors = [sort]
-        
-        // Edit the section name key path and cache name if appropriate.
-        // nil for section name key path means "no sections".
-        fetchedResultsControllerTV = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: mainManagedObjectContext, sectionNameKeyPath:nil, cacheName: nil)
-        
-        fetchedResultsControllerTV.delegate = self
-        
-            do {
-                try self.fetchedResultsControllerTV.performFetch()
-            } catch {
-                fatalError("Failed to initialize FetchedResultsController: \(error)")
-            }        
-    }
-    
-    func initializeFetchedResultsControllerForCV() {
-        
-        let fetchRequest: NSFetchRequest<NewsFeedEntity> = NewsFeedEntity.fetchRequest()
-        
-        // Set the batch size to a suitable number.
-        fetchRequest.fetchBatchSize = 20
-        
-        // Edit the sort key as appropriate.
-        let sortDescriptor = NSSortDescriptor(key: "date", ascending: false)
-        let predicate = NSPredicate(format: "isPinned == %@", NSNumber(booleanLiteral: true))
-        fetchRequest.predicate = predicate
-        fetchRequest.sortDescriptors = [sortDescriptor]
-        
-        // Edit the section name key path and cache name if appropriate.
-        // nil for section name key path means "no sections".
-        fetchedResultsControllerCV = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: mainManagedObjectContext, sectionNameKeyPath:nil, cacheName: nil)
-        
-        fetchedResultsControllerCV.delegate = self
-        
-        do {
-            try fetchedResultsControllerCV.performFetch()
-        } catch {
-            fatalError("Failed to initialize FetchedResultsController: \(error)")
-        }
-        
-    }
-    
     //MARK: - ScrollView delegate 
     
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -213,7 +188,6 @@ class NewsFeedController: UITableViewController {
         let deltaOffset = maximumOffset - currentOffset
         //check velocity
         let velocity = Double(scrollView.panGestureRecognizer.velocity(in:  view).y)
-        let isScrolledSlowlyToBottom = (-50.0..<0).contains(velocity)
         let viewWidth = view.bounds.width
         if  deltaOffset <= 100 * viewWidth {
                 loadNewFromNextPage()
@@ -269,10 +243,9 @@ class NewsFeedController: UITableViewController {
             
             if let indexPath = indexPath {
                 let newsObject = fromTV ?
-                    fetchedResultsControllerTV.object(at: indexPath) :
-                    fetchedResultsControllerCV.object(at: indexPath)
-                
-                CoreDataManager.shared.makeNewsRead(news: newsObject)
+                    newsItems[indexPath.row] :
+                    newsItems[indexPath.item]
+                //make news Read
                 let controller = segue.destination as! NewsDetailViewController
                 controller.newsItem = newsObject.newsItem
                 controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
@@ -289,8 +262,7 @@ class NewsFeedController: UITableViewController {
         if let headerView = tableView.tableHeaderView {
             var height = headerView.systemLayoutSizeFitting(UILayoutFittingCompressedSize).height
             var headerFrame = headerView.frame
-            if let pinnedNewsCount = fetchedResultsControllerCV.fetchedObjects?.count,
-                pinnedNewsCount < 1 {
+            if  pinnedNewsItems.count < 1 {
                 height = 0
             } else {
                 height = headerViewHeight

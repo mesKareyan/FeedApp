@@ -108,28 +108,22 @@ class NetworkManager {
         request.httpMethod = "GET"
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard error == nil else {
-//                DispatchQueue.main.async {
                     completion(.fail(with: error!))
-//                }
                 return
             }
             guard let data = data else {
-//                DispatchQueue.main.async {
                     completion(.fail(with: InternalError.badResponse))
-//                }
                 return
             }
             let result = ApiRequestSerialization.resultFor(response: response, data: data)
-//            DispatchQueue.main.async {
                 completion(result)
-//            }
         }
         task.resume()
     }
     
     //Single item
     
-    func getBodyFor(newsItem: NewsFeedEntity,
+    func getBodyFor(newsItem: NewsFeedItemRealm,
                      completion: @escaping NetworkRequestCompletion) {
         var request = URLRequest(url: API.urlForSingleNews(url: newsItem.newsItem!.apiURL!))
         request.httpMethod = "GET"

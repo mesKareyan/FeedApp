@@ -15,7 +15,7 @@ class FeedCollectionCell: UICollectionViewCell {
     @IBOutlet weak var thumbnailImageView: UIImageView!
     @IBOutlet weak var detailsLabel: UILabel!
     @IBOutlet weak var closeButton: UIButton!
-    var newsItem: NewsFeedEntity!
+    var newsItem: NewsFeedItemRealm!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -61,12 +61,11 @@ class FeedCollectionCell: UICollectionViewCell {
     }
     
     @IBAction func closeButtonTaped(_ sender: UIButton) {
-       self.newsItem.isPinned = false
-        CoreDataManager.shared.saveContext()
+        RealmManager.makeNews(pinned: false, news: self.newsItem)
         Shared.imageCache.removeAll()
     }
     
-    func configure(for newsEntity: NewsFeedEntity) {
+    func configure(for newsEntity: NewsFeedItemRealm) {
         newsItem = newsEntity
         detailsLabel.text  = newsEntity.title
         if let urlString = newsEntity.thumbnail,

@@ -18,16 +18,16 @@ class FeedTableCell: UITableViewCell {
     @IBOutlet weak var tagsContainerView: UIView!
     @IBOutlet weak var tagsContainerHeightConstraint: NSLayoutConstraint!
     
-    var news: NewsFeedEntity!
+    var news: NewsFeedItemRealm!
     var imageURLSting: String!
     
-    func configure(for newsEntity: NewsFeedEntity) {
+    func configure(for newsEntity: NewsFeedItemRealm) {
         
         news = newsEntity
         topLabel.text      = newsEntity.category
         detailsLabel.text  = newsEntity.title
         dateLabel.text     = newsEntity.date?.shortString
-        unreadCircleView.isHidden = newsEntity.isRead
+        //unreadCircleView.isHidden = newsEntity.isRead!
         tagsContainerView.backgroundColor = UIColor.white
         imageURLSting   = newsEntity.thumbnail
         if let urlString = newsEntity.thumbnail,

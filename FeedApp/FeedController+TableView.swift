@@ -15,22 +15,22 @@ extension NewsFeedController  {
     // MARK: - Table View Delegate
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return fetchedResultsControllerTV.sections?.count ?? 0
+        return 1
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let sectionInfo = fetchedResultsControllerTV.sections![section]
-        return sectionInfo.numberOfObjects
+        return newsItems.count
     }
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        guard let sectionInfo = fetchedResultsControllerTV.sections?[section] else { fatalError("Unexpected Section") }
-        return sectionInfo.name
+        return nil
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
         let cell = tableView.dequeueReusableCell(withIdentifier: Constants.CellIdentifer.tableCell, for: indexPath) as! FeedTableCell
-        let newsItem = fetchedResultsControllerTV.object(at: indexPath)
+        
+        let newsItem = newsItems[indexPath.item]
         cell.configure(for: newsItem)
         
         return cell
@@ -44,7 +44,7 @@ extension NewsFeedController : UITableViewDataSourcePrefetching {
     func tableView(_ tableView: UITableView, prefetchRowsAt indexPaths: [IndexPath]) {
         for indexPath in indexPaths {
             let cell = tableView.dequeueReusableCell(withIdentifier: Constants.CellIdentifer.tableCell, for: indexPath) as! FeedTableCell
-            let newsItem = fetchedResultsControllerTV.object(at: indexPath)
+            let newsItem = newsItems[indexPath.row]
             cell.configure(for: newsItem)
         }
     }
