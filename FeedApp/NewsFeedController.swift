@@ -64,6 +64,7 @@ class NewsFeedController: UITableViewController {
         (tableView as UIScrollView).delegate = self
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 500
+        footerView.bounds.size.height = 0
         
         collectionView.contentOffset = CGPoint(x: (collectionView.bounds.width - (collectionView.collectionViewLayout as! UICollectionViewFlowLayout).itemSize.width) / CGFloat(2.0), y: 0)
         
@@ -71,7 +72,6 @@ class NewsFeedController: UITableViewController {
         
         // add Footer progress bar
         tableView.decelerationRate = UIScrollViewDecelerationRateFast
-        footerView.bounds.size.height = 0
         let frame = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 50)
         footerView.backgroundColor = .appRed
         let progressBar = NVActivityIndicatorView(frame: frame,
@@ -130,6 +130,7 @@ class NewsFeedController: UITableViewController {
             case .success(with: let data):
                 let news = data as! [NewsFeedItem]
                 DispatchQueue.main.async {
+                    self.footerView.bounds.size.height = 60
                     RealmManager.addNews(items: news)
                     SVProgressHUD.dismiss()
                     if showHUD {
@@ -160,7 +161,6 @@ class NewsFeedController: UITableViewController {
                 let news = data as! [NewsFeedItem]
                 RealmManager.addNews(items: news)
                 DispatchQueue.main.async {
-                    self.footerView.frame.size.height = 100
                 }
             }
         }
@@ -195,35 +195,6 @@ class NewsFeedController: UITableViewController {
             isNeedToLoadNextPage = true
         }
     }
-
-    override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        guard scrollView == tableView else {
-            return
-        }
-        //check velocity
-        let velocity = Double(scrollView.panGestureRecognizer.velocity(in:  view).y)
-        let isScrolledSlowlyToBottom = (-50.0...0).contains(velocity)
-        guard isScrolledSlowlyToBottom else {
-            return
-        }
-        let position = footerView.superview!.convert(footerView.frame.origin , to: nil).y
-        let screenHeight = view.bounds.height
-        let positionFromBottom = screenHeight - position
-        
-        if isNeedToLoadNextPage || positionFromBottom > 30 {
-            loadNewFromNextPage()
-        }
-    }
-    
-    
-    override func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-    }
-    
-    override func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        if !decelerate {
-        }
-    }
-    
     
     // MARK: - Segues
     
