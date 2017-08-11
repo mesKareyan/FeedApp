@@ -7,6 +7,8 @@
 
 import UIKit
 
+var tokensDict: [String : [String]] = [:]
+
 class FeedTableCell: UITableViewCell {
     
     @IBOutlet weak var unreadCircleView: UIView!
@@ -20,18 +22,23 @@ class FeedTableCell: UITableViewCell {
     
     var news: NewsFeedItemRealm!
     var imageURLSting: String!
-
     
-    func configure(for newsEntity: NewsFeedItemRealm) {
+    override func layoutSubviews() {
+        super.layoutSubviews()
         thumbnailImageView.sd_setShowActivityIndicatorView(true)
         thumbnailImageView.sd_setIndicatorStyle(.gray)
+        tagsContainerView.backgroundColor = UIColor.white
+    }
+    
+    func configure(for newsEntity: NewsFeedItemRealm) {
+        
         news = newsEntity
         topLabel.text      = newsEntity.category
         detailsLabel.text  = newsEntity.title
         dateLabel.text     = newsEntity.date?.shortString
         unreadCircleView.isHidden = newsEntity.read
-        tagsContainerView.backgroundColor = UIColor.white
         imageURLSting   = newsEntity.thumbnail
+        
         if let urlString = newsEntity.thumbnail,
             !urlString.isEmpty
         {
@@ -41,16 +48,21 @@ class FeedTableCell: UITableViewCell {
         // add tag views
         configureTagViews(forWidth: tagsContainerView.bounds.width)
     }
-    
+
     //MARK: - Tag views
     func configureTagViews(forWidth containerWidth: CGFloat) {
         
         tagsContainerView.subviews.forEach { subview in subview.removeFromSuperview()
         }
         
-        guard let text = news.title else { return }
+        guard let text = news?.title else { return }
         
-        let words = (text as NSString).getTokens()
+        var words: [String]! = tokensDict[text]
+        if words == nil {
+            words = (text as NSString).getTokens()
+            tokensDict[text] = words
+        }
+
         
         let inset: CGFloat = 8
         var xPosition:CGFloat = inset
@@ -59,9 +71,15 @@ class FeedTableCell: UITableViewCell {
         var tagsContainerHeightConstant:CGFloat =  inset
         var colomnCount = 0
         
+        var tagViewFromPrev: TagLabel!
+
         for (index, currentWord) in words.enumerated() {
             
-            let currentTagView = TagLabel(text: currentWord)
+            var currentTagView : TagLabel! = tagViewFromPrev
+            if currentTagView == nil {
+                currentTagView = TagLabel(text: currentWord, maxLength: bounds.width)
+            }
+            // let currentTagView = TagLabel(text: currentWord)
             currentTagView.frame.origin = CGPoint(x: xPosition, y: yPosition)
             tagsContainerView.addSubview(currentTagView)
             
@@ -74,8 +92,8 @@ class FeedTableCell: UITableViewCell {
             }
             
             let nextWord    =  words[index + 1]
-            let nextTagView = TagLabel(text: nextWord)
-            
+            let nextTagView = TagLabel(text: nextWord, maxLength: bounds.width)
+            tagViewFromPrev  = nextTagView
             //calculate next tavView frame
             //shift with label width
             xPosition += currentTagView.bounds.width + inset
@@ -88,7 +106,6 @@ class FeedTableCell: UITableViewCell {
             }
         }
         tagsContainerHeightConstraint.constant = tagsContainerHeightConstant + inset
-        layoutIfNeeded()
     }
 }
 

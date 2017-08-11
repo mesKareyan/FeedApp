@@ -21,12 +21,18 @@ class TagLabel: UILabel {
     }
     
     convenience init(text: String,
+                     maxLength: CGFloat,
                      font: UIFont = UIFont.systemFont(ofSize: 21)) {
         var size = (text as NSString)
                     .size(attributes: [NSFontAttributeName : font])
         size.width  += 16
         size.height += 16
         self.init(frame: CGRect(origin: .zero, size: size))
+        if size.width > maxLength {
+            size.width = maxLength - 16
+            self.adjustsFontSizeToFitWidth = true
+            self.bounds.size = size
+        }
         self.font = font
         self.text = text
         self.textAlignment = .center

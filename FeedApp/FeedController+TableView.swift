@@ -30,10 +30,18 @@ extension NewsFeedController  {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: Constants.CellIdentifer.tableCell, for: indexPath) as! FeedTableCell
         
-        let newsItem = newsItems[indexPath.item]
-        cell.configure(for: newsItem)
+//        let newsItem = newsItems[indexPath.item]
+//        cell.configure(for: newsItem)
         
         return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        guard let cell = cell as? FeedTableCell else {
+            return
+        }
+        let newsItem = newsItems[indexPath.item]
+        cell.configure(for: newsItem)
     }
     
     

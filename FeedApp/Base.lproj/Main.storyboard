@@ -15,7 +15,7 @@
         <scene sceneID="cUw-u8-ADb">
             <objects>
                 <tableViewController title="Master" id="JGa-K9-lkf" customClass="NewsFeedController" customModule="FeedApp" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" bounces="NO" showsHorizontalScrollIndicator="NO" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="408" sectionHeaderHeight="22" sectionFooterHeight="22" id="wvs-FR-nij">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" bounces="NO" showsHorizontalScrollIndicator="NO" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="408" sectionHeaderHeight="22" sectionFooterHeight="22" id="wvs-FR-nij">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -124,7 +124,7 @@
                                 <rect key="frame" x="0.0" y="242" width="320" height="408"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="gHg-WB-3Z5" id="hu6-q8-aq4">
-                                    <rect key="frame" x="0.0" y="0.0" width="320" height="407.5"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="320" height="408"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0Jj-Na-i5M">
@@ -132,18 +132,21 @@
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="15" translatesAutoresizingMaskIntoConstraints="NO" id="5fj-LK-mcO">
                                                     <rect key="frame" x="30" y="7.5" width="49" height="26"/>
+                                                    <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                                     <fontDescription key="fontDescription" name="HelveticaNeue-CondensedBlack" family="Helvetica Neue" pointSize="22"/>
                                                     <color key="textColor" red="1" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Date" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="13" translatesAutoresizingMaskIntoConstraints="NO" id="uRU-sR-nUV">
                                                     <rect key="frame" x="277.5" y="12.5" width="34.5" height="15"/>
+                                                    <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                                     <fontDescription key="fontDescription" name="HiraMinProN-W6" family="Hiragino Mincho ProN" pointSize="15"/>
                                                     <color key="textColor" red="1" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="New Moon Filled" translatesAutoresizingMaskIntoConstraints="NO" id="DvE-88-dpq">
                                                     <rect key="frame" x="8" y="5" width="6" height="6"/>
+                                                    <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="6" id="NAr-tD-miE"/>
                                                         <constraint firstAttribute="height" constant="6" id="nW1-WR-Y3Q"/>
@@ -163,19 +166,19 @@
                                                 <constraint firstItem="DvE-88-dpq" firstAttribute="leading" secondItem="0Jj-Na-i5M" secondAttribute="leading" constant="8" id="z6X-4j-ZAU"/>
                                             </constraints>
                                         </view>
-                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="empty" translatesAutoresizingMaskIntoConstraints="NO" id="AU0-Ov-Wbd">
-                                            <rect key="frame" x="8" y="48" width="304" height="200"/>
+                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="AU0-Ov-Wbd">
+                                            <rect key="frame" x="8" y="48" width="304" height="170"/>
                                             <constraints>
-                                                <constraint firstAttribute="height" constant="200" id="2zi-LL-rWm"/>
+                                                <constraint firstAttribute="height" constant="170" id="2zi-LL-rWm"/>
                                             </constraints>
                                         </imageView>
                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Psp-n4-8cD" userLabel="Details label background">
-                                            <rect key="frame" x="0.0" y="256" width="320" height="141.5"/>
+                                            <rect key="frame" x="0.0" y="226" width="320" height="171.5"/>
                                             <color key="backgroundColor" red="1" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
                                         </view>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="The" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumFontSize="5" translatesAutoresizingMaskIntoConstraints="NO" id="jPr-XQ-n3j">
-                                            <rect key="frame" x="8" y="256" width="304" height="141.5"/>
-                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                            <rect key="frame" x="8" y="226" width="304" height="171.5"/>
+                                            <color key="backgroundColor" red="1" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
                                             <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="22"/>
                                             <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                             <nil key="highlightedColor"/>
@@ -322,7 +325,6 @@
         <image name="New Moon Filled" width="12" height="12"/>
         <image name="cancel" width="22" height="22"/>
         <image name="collapse Arrow" width="22" height="22"/>
-        <image name="empty" width="900" height="450"/>
     </resources>
     <inferredMetricsTieBreakers>
         <segue reference="dNO-Qb-xQq"/>

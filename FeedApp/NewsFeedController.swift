@@ -71,7 +71,6 @@ class NewsFeedController: UITableViewController {
         self.loadLastNews(showHUD: true)
         
         // add Footer progress bar
-        tableView.decelerationRate = UIScrollViewDecelerationRateFast
         let frame = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 50)
         footerView.backgroundColor = .appRed
         let progressBar = NVActivityIndicatorView(frame: frame,
