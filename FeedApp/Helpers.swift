@@ -49,6 +49,27 @@ extension String {
     
 }
 
+extension NSString {
+    
+    func getTokens() -> [String] {
+        var tokens = [String]()
+        let options: NSLinguisticTagger.Options = [.omitWhitespace, .omitPunctuation, .joinNames, .omitOther]
+        let schemes = NSLinguisticTagger.availableTagSchemes(forLanguage: "en")
+        let tagger = NSLinguisticTagger(tagSchemes: schemes, options: Int(options.rawValue))
+        tagger.string = self as String
+        tagger.enumerateTags(in: NSMakeRange(0, self.length), scheme: NSLinguisticTagSchemeNameTypeOrLexicalClass, options: options) { (tag, tokenRange, _, _) in
+            let token = self.substring(with: tokenRange)
+            if !["Preposition", "Particle", "Determiner", "Verb", "Adverb", "Pronoun"].contains(tag)  {
+                if token != "|" {
+                    tokens.append(token)
+                }
+            }
+        }
+        return tokens
+    }
+    
+}
+
 extension TimeInterval {
     
     var date: Date {
@@ -59,8 +80,8 @@ extension TimeInterval {
 
 extension UIColor {
 
-    static var appRed: UIColor {
-        return UIColor(red: 255.0 / 255.0, green: 51.0/255.0, blue: 52/255.0, alpha: 1.0)
+    static var appColor: UIColor {
+        return UIColor(red: 48.0 / 255.0, green: 131.0/255.0, blue: 251/255.0, alpha: 1.0)
     }
     
 }

@@ -22,7 +22,7 @@ class TagLabel: UILabel {
     
     convenience init(text: String,
                      maxLength: CGFloat,
-                     font: UIFont = UIFont.systemFont(ofSize: 21)) {
+                     font: UIFont = UIFont.preferredFont(forTextStyle: .footnote)) {
         var size = (text as NSString)
                     .size(attributes: [NSFontAttributeName : font])
         size.width  += 16

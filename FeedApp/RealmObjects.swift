@@ -11,15 +11,15 @@ import RealmSwift
 
 class NewsFeedItemRealm: Object {
     
-    dynamic  var pinned:      Bool = false
-    dynamic  var read:        Bool = false
-    dynamic  var category:  String?
-    dynamic  var date:      NSDate?
-    dynamic  var id:        String?
-    dynamic  var thumbnail: String?
-    dynamic  var title:     String?
-    dynamic  var url:       String?
-    dynamic  var newsItem:  NewsItemRealm?
+    dynamic  var pinned:        Bool = false
+    dynamic  var read:          Bool = false
+    dynamic  var category:      String?
+    dynamic  var date:          NSDate?
+    dynamic  var id:            String?
+    dynamic  var thumbnailURL:  String?
+    dynamic  var title:         String?
+    dynamic  var url:           String?
+    dynamic  var newsItem:      NewsItemRealm?
     
     override static func primaryKey() -> String? {
         return "id"

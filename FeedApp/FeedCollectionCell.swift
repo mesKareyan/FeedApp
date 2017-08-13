@@ -58,8 +58,6 @@ class FeedCollectionCell: UICollectionViewCell {
         layer.shadowOpacity = 1.0
         layer.masksToBounds = false
         layer.shadowPath = UIBezierPath(roundedRect: self.containerView.frame, cornerRadius: self.containerView.layer.cornerRadius).cgPath
-
-        
     }
     
     @IBAction func closeButtonTaped(_ sender: UIButton) {
@@ -71,7 +69,7 @@ class FeedCollectionCell: UICollectionViewCell {
         detailsLabel.text  = newsEntity.title
         thumbnailImageView.sd_setShowActivityIndicatorView(true)
         thumbnailImageView.sd_setIndicatorStyle(.gray)
-        if let urlString = newsEntity.thumbnail,
+        if let urlString = newsEntity.thumbnailURL,
             !urlString.isEmpty
         {
             let url = URL(string: urlString)!

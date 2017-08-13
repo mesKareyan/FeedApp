@@ -7,7 +7,18 @@
 
 import UIKit
 
-var tokensDict: [String : [String]] = [:]
+typealias TagViewsDict = [String : TagViewsWrapper]
+
+class TagViewsWrapper: NSObject {
+    var views = [TagLabel]()
+    var height: CGFloat = 0
+    
+    init(views: [TagLabel], height: CGFloat) {
+        super.init()
+        self.views = views
+        self.height = height
+    }
+}
 
 class FeedTableCell: UITableViewCell {
     
@@ -20,7 +31,11 @@ class FeedTableCell: UITableViewCell {
     @IBOutlet weak var tagsContainerView: UIView!
     @IBOutlet weak var tagsContainerHeightConstraint: NSLayoutConstraint!
     
-    var news: NewsFeedItemRealm!
+    var news: NewsFeedItemRealm! {
+        didSet {
+            self.configure(for: news)
+        }
+    }
     var imageURLSting: String!
     
     override func layoutSubviews() {
@@ -28,18 +43,18 @@ class FeedTableCell: UITableViewCell {
         thumbnailImageView.sd_setShowActivityIndicatorView(true)
         thumbnailImageView.sd_setIndicatorStyle(.gray)
         tagsContainerView.backgroundColor = UIColor.white
+        unreadCircleView.tintColor = .appColor
     }
     
     func configure(for newsEntity: NewsFeedItemRealm) {
         
-        news = newsEntity
         topLabel.text      = newsEntity.category
         detailsLabel.text  = newsEntity.title
         dateLabel.text     = newsEntity.date?.shortString
         unreadCircleView.isHidden = newsEntity.read
-        imageURLSting   = newsEntity.thumbnail
+        imageURLSting   = newsEntity.thumbnailURL
         
-        if let urlString = newsEntity.thumbnail,
+        if let urlString = newsEntity.thumbnailURL,
             !urlString.isEmpty
         {
             let url = URL(string: urlString)!
@@ -52,18 +67,30 @@ class FeedTableCell: UITableViewCell {
     //MARK: - Tag views
     func configureTagViews(forWidth containerWidth: CGFloat) {
         
+        //updateTag views
         tagsContainerView.subviews.forEach { subview in subview.removeFromSuperview()
         }
         
+        //get Tokens from cache or create
         guard let text = news?.title else { return }
         
-        var words: [String]! = tokensDict[text]
+        var words: [NSString]! = tokensCache.object(forKey: text as NSString) as? [NSString]
         if words == nil {
-            words = (text as NSString).getTokens()
-            tokensDict[text] = words
+            words = text.getTokens() as [NSString]
+            tokensCache.setObject(words! as NSArray, forKey: text as NSString)
         }
-
         
+        var tagViewsWrapper: TagViewsWrapper! = tagViewsCache.object(forKey: text as NSString)
+        if  tagViewsWrapper != nil {
+            for tagView in tagViewsWrapper.views {
+                tagsContainerView.addSubview(tagView)
+            }
+             tagsContainerHeightConstraint.constant = tagViewsWrapper.height
+            return
+        }
+        
+        var tagViews = [TagLabel]()
+
         let inset: CGFloat = 8
         var xPosition:CGFloat = inset
         var yPosition:CGFloat = inset
@@ -77,11 +104,11 @@ class FeedTableCell: UITableViewCell {
             
             var currentTagView : TagLabel! = tagViewFromPrev
             if currentTagView == nil {
-                currentTagView = TagLabel(text: currentWord, maxLength: bounds.width)
+                currentTagView = TagLabel(text: currentWord as String, maxLength: bounds.width)
             }
             // let currentTagView = TagLabel(text: currentWord)
             currentTagView.frame.origin = CGPoint(x: xPosition, y: yPosition)
-            tagsContainerView.addSubview(currentTagView)
+            tagViews.append(currentTagView)
             
             if index == 0 {
                 tagsContainerHeightConstant += currentTagView.bounds.height
@@ -92,7 +119,7 @@ class FeedTableCell: UITableViewCell {
             }
             
             let nextWord    =  words[index + 1]
-            let nextTagView = TagLabel(text: nextWord, maxLength: bounds.width)
+            let nextTagView = TagLabel(text: nextWord as String, maxLength: bounds.width)
             tagViewFromPrev  = nextTagView
             //calculate next tavView frame
             //shift with label width
@@ -105,28 +132,13 @@ class FeedTableCell: UITableViewCell {
                 tagsContainerHeightConstant = yPosition + nextTagView.bounds.height
             }
         }
-        tagsContainerHeightConstraint.constant = tagsContainerHeightConstant + inset
+        
+        let tagsViewHeight = tagsContainerHeightConstant + inset
+        tagsContainerHeightConstraint.constant = tagsViewHeight
+        tagViewsWrapper = TagViewsWrapper(views: tagViews, height: tagsViewHeight)
+        tagViewsCache.setObject(tagViewsWrapper, forKey: text as NSString)
+        
     }
 }
 
-extension NSString {
-    
-    func getTokens() -> [String] {
-        var tokens = [String]()
-        let options: NSLinguisticTagger.Options = [.omitWhitespace, .omitPunctuation, .joinNames, .omitOther]
-        let schemes = NSLinguisticTagger.availableTagSchemes(forLanguage: "en")
-        let tagger = NSLinguisticTagger(tagSchemes: schemes, options: Int(options.rawValue))
-        tagger.string = self as String
-        tagger.enumerateTags(in: NSMakeRange(0, self.length), scheme: NSLinguisticTagSchemeNameTypeOrLexicalClass, options: options) { (tag, tokenRange, _, _) in
-            let token = self.substring(with: tokenRange)
-            if !["Preposition", "Particle", "Determiner", "Verb", "Adverb", "Pronoun"].contains(tag)  {
-                if token != "|" {
-                 tokens.append(token)
-                }
-            }
-        }
-        return tokens
-    }
-    
-}
 

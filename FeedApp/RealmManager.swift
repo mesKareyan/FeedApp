@@ -42,7 +42,7 @@ class RealmManager {
             newsFeedRealm.url        = newsItem.webUrl
             newsFeedRealm.category   = newsItem.sectionName
             newsFeedRealm.date       = newsItem.webPublicationDate.shortNSDate
-            newsFeedRealm.thumbnail  = newsItem.thumbnail
+            newsFeedRealm.thumbnailURL  = newsItem.thumbnail
             
             let newsRealm       = NewsItemRealm()
             newsRealm.id       = newsItem.id

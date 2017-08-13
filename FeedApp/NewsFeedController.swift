@@ -13,10 +13,13 @@ import NVActivityIndicatorView
 import ReachabilitySwift
 import RealmSwift
 
+var tokensCache     =  NSCache<NSString, NSArray> ()
+var tagViewsCache   =  NSCache<NSString, TagViewsWrapper>()
+var rowHeightsCache =  NSCache<NSString, NSNumber>()
+
 class NewsFeedController: UITableViewController {
     
     //Realm
-    
     let realm = try! Realm()
     
     var notificationToken: NotificationToken? = nil
@@ -32,9 +35,6 @@ class NewsFeedController: UITableViewController {
        pinnedNewsItems = realm.objects(NewsFeedItemRealm.self)
                                 .filter("pinned == true")
     }
-    
-    var blockOperation: BlockOperation!
-
     
     @IBOutlet weak var footerView: UIView!
     
@@ -58,12 +58,11 @@ class NewsFeedController: UITableViewController {
         super.viewDidLoad()
         
         //tableView.prefetchDataSource = self
-        
         observeRealmChanges()
         
         (tableView as UIScrollView).delegate = self
         tableView.rowHeight = UITableViewAutomaticDimension
-        tableView.estimatedRowHeight = 500
+        tableView.estimatedRowHeight = 400
         footerView.bounds.size.height = 0
         
         collectionView.contentOffset = CGPoint(x: (collectionView.bounds.width - (collectionView.collectionViewLayout as! UICollectionViewFlowLayout).itemSize.width) / CGFloat(2.0), y: 0)
@@ -72,7 +71,7 @@ class NewsFeedController: UITableViewController {
         
         // add Footer progress bar
         let frame = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 50)
-        footerView.backgroundColor = .appRed
+        footerView.backgroundColor = .appColor
         let progressBar = NVActivityIndicatorView(frame: frame,
                                                   type: .ballPulseSync,
                                                   color: .white,
@@ -88,7 +87,6 @@ class NewsFeedController: UITableViewController {
         
     }
 
-    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         UIView.animate(withDuration: 0.4, delay: 0.0, options: .curveEaseOut, animations:
@@ -96,7 +94,7 @@ class NewsFeedController: UITableViewController {
                 self.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.red]
                 self.navigationController?.navigationBar.barTintColor = UIColor.white
                 self.navigationController?.navigationBar.barStyle = .default
-                self.navigationController!.navigationBar.tintColor = .appRed
+                self.navigationController!.navigationBar.tintColor = .appColor
         }, completion: nil)
         if isInitailContentLoaded {
             SVProgressHUD.dismiss()
@@ -105,16 +103,17 @@ class NewsFeedController: UITableViewController {
         collectionView.reloadData()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        updateTopView()
+    }
+
     deinit {
         notificationToken?.stop()
     }
 
     //MARK: Initialization
-    
-    func initializateNewsFromRealm() {
-        
-    }
-    
+
     func loadLastNews(showHUD: Bool = false) {
         if showHUD {
             SVProgressHUD.show()
@@ -142,9 +141,6 @@ class NewsFeedController: UITableViewController {
     }
     
     func loadNewFromNextPage() {
-        guard !isLoadingInProgress else {
-            return
-        }
         isNeedToLoadNextPage = false
         let rowCount = tableView.numberOfRows(inSection: 0)
         let page = rowCount > 0 ? rowCount / Constants.newsPageCount + 1 : 1
@@ -187,7 +183,7 @@ class NewsFeedController: UITableViewController {
         //check velocity
         let velocity = Double(scrollView.panGestureRecognizer.velocity(in:  view).y)
         let viewWidth = view.bounds.width
-        if  deltaOffset <= 100 * viewWidth {
+        if !isLoadingInProgress && deltaOffset <= 100 * viewWidth {
                 loadNewFromNextPage()
         }
         if velocity < -50 && deltaOffset <= 0{
@@ -225,9 +221,7 @@ class NewsFeedController: UITableViewController {
 
     //MARK: - Horizontal View
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        
+    func updateTopView() {
         if let headerView = tableView.tableHeaderView {
             var height = headerView.systemLayoutSizeFitting(UILayoutFittingCompressedSize).height
             var headerFrame = headerView.frame
@@ -238,7 +232,7 @@ class NewsFeedController: UITableViewController {
             }
             //Comparison necessary to avoid infinite loop
             if height != headerFrame.size.height {
-                UIView.transition(with: headerView, duration: 0.5, options: .curveEaseOut, animations: { 
+                UIView.transition(with: headerView, duration: 0.5, options: .curveEaseOut, animations: {
                     headerFrame.size.height = height
                     headerView.frame = headerFrame
                     self.tableView.tableHeaderView = headerView
@@ -249,6 +243,7 @@ class NewsFeedController: UITableViewController {
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
+        tagViewsCache.removeAllObjects()
         let cells = tableView.visibleCells as! [FeedTableCell]
         cells.forEach{ cell in
             cell.configureTagViews(forWidth: size.width)

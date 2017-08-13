@@ -22,16 +22,12 @@ extension NewsFeedController  {
         return newsItems.count
     }
     
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return nil
-    }
-    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: Constants.CellIdentifer.tableCell, for: indexPath) as! FeedTableCell
         
-//        let newsItem = newsItems[indexPath.item]
-//        cell.configure(for: newsItem)
+        let newsItem = newsItems[indexPath.item]
+        cell.news = newsItem
         
         return cell
     }
@@ -40,10 +36,26 @@ extension NewsFeedController  {
         guard let cell = cell as? FeedTableCell else {
             return
         }
-        let newsItem = newsItems[indexPath.item]
-        cell.configure(for: newsItem)
+        let newsItem  = newsItems[indexPath.item]
+        let newsTitle = newsItem.title! as NSString
+        let rowHeight = rowHeightsCache.object(forKey: newsTitle)
+        if rowHeight == nil {
+            rowHeightsCache.setObject(NSNumber(value: Float(cell.bounds.height)), forKey: newsTitle)
+        }
     }
     
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return UITableViewAutomaticDimension
+    }
+    
+    override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        let newsTitle = newsItems[indexPath.row].title! as NSString
+        if let height = rowHeightsCache.object(forKey: newsTitle) {
+            return CGFloat(height.floatValue)
+        } else {
+            return UITableViewAutomaticDimension
+        }
+    }
     
 }
 
@@ -53,11 +65,8 @@ extension NewsFeedController : UITableViewDataSourcePrefetching {
         for indexPath in indexPaths {
             let cell = tableView.dequeueReusableCell(withIdentifier: Constants.CellIdentifer.tableCell, for: indexPath) as! FeedTableCell
             let newsItem = newsItems[indexPath.row]
-            cell.configure(for: newsItem)
+            cell.news = newsItem
         }
     }
     
-    func tableView(_ tableView: UITableView, cancelPrefetchingForRowsAt indexPaths: [IndexPath]) {
-        
-    }
 }
