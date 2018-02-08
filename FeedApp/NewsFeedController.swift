@@ -16,7 +16,7 @@ import ReachabilitySwift
 class NewsFeedController: UITableViewController {
 
     
-    var mainManagedObjectContext = CoreDataManager.shared.persistentContainer.viewContext
+    var mainManagedObjectContext = CoreDataStack.shared.mainManagedObjectContext
 
     @IBOutlet weak var footerView: UIView!
     
@@ -102,7 +102,7 @@ class NewsFeedController: UITableViewController {
                 self.showAlert(for: error)
             case .success(with: let data):
                 let news = data as! [NewsFeedItem]
-                CoreDataManager.shared.saveNews(items: news)
+                CoreDataStack.shared.saveNews(items: news)
                 if showHUD {
                     self.startTimer()
                 }
@@ -128,7 +128,7 @@ class NewsFeedController: UITableViewController {
                 }
             case .success(with: let data):
                 let news = data as! [NewsFeedItem]
-                CoreDataManager.shared.saveNews(items: news)
+                CoreDataStack.shared.saveNews(items: news)
                 DispatchQueue.main.async {
                     self.footerView.frame.size.height = 100
                     self.tableView.backgroundColor = .appRed
@@ -266,7 +266,7 @@ class NewsFeedController: UITableViewController {
                     fetchedResultsControllerTV.object(at: indexPath) :
                     fetchedResultsControllerCV.object(at: indexPath)
                 
-                CoreDataManager.shared.makeNewsRead(news: newsObject)
+                CoreDataStack.shared.makeNewsRead(news: newsObject)
                 let controller = segue.destination as! NewsDetailViewController
                 controller.newsItem = newsObject.newsItem
                 controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem

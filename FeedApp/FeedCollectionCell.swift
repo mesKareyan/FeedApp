@@ -62,7 +62,7 @@ class FeedCollectionCell: UICollectionViewCell {
     
     @IBAction func closeButtonTaped(_ sender: UIButton) {
        self.newsItem.isPinned = false
-        CoreDataManager.shared.saveContext()
+        CoreDataStack.shared.saveMainContext()
         Shared.imageCache.removeAll()
     }
     

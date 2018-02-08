@@ -5,39 +5,128 @@
 //  Created by Mesrop Kareyan on 7/10/17.
 //  Copyright © 2017 none. All rights reserved.
 //
-
+//FeedApp
 import Foundation
 import CoreData
 
-class CoreDataManager {
+class CoreDataStack {
     
-    static let shared = CoreDataManager()
-    let backgroundContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+    private init () {
+        setupNotificationHandling()
+    }
     
-    private init() {}
-    
-    func saveNews(items news: [NewsFeedItem]) {
-        // Create new context for asynchronous execution with privateQueueConcurrencyType
-        // Add your viewContext as parent, therefore changes are pushed to the viewContext, instead of the persistent store coordinator
-        let viewContext = self.persistentContainer.viewContext
-        backgroundContext.parent = viewContext
-        backgroundContext.perform {
-            news.forEach {
-                self.insertNewsObjectsFor(newsItem: $0, toContext: self.backgroundContext)
+    static let shared = CoreDataStack()
+    lazy var persistentContainer: NSPersistentContainer = {
+        let container = NSPersistentContainer(name: "FeedApp")
+        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
+            if let error = error as NSError? {
+                fatalError("Unresolved error \(error), \(error.userInfo)")
             }
-            try! self.backgroundContext.save()
+        })
+        return container
+    }()
+    
+    // MARK: - Core Data Saving support
+    func saveDefaultContext () {
+        let context = persistentContainer.viewContext
+        if context.hasChanges {
+            do {
+                try context.save()
+            } catch {
+                let nserror = error as NSError
+                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+            }
+        }
+    }
+    
+    func saveMainContext () {
+        let context = self.mainManagedObjectContext
+        if context.hasChanges {
+            do {
+                try context.save()
+            } catch {
+                let nserror = error as NSError
+                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+            }
+        }
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func setupNotificationHandling() {
+        let notificationCenter = NotificationCenter.default
+        notificationCenter.addObserver(self, selector: #selector(saveChanges(_:)), name: Notification.Name.UIApplicationWillTerminate, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(saveChanges(_:)), name: Notification.Name.UIApplicationDidEnterBackground, object: nil)
+    }
+    
+    // MARK: - Notification Handling
+    
+    @objc func saveChanges(_ notification: NSNotification) {
+        mainManagedObjectContext.perform {
+            do {
+                if self.mainManagedObjectContext.hasChanges {
+                    try self.mainManagedObjectContext.save()
+                }
+            } catch {
+                let saveError = error as NSError
+                print("Unable to Save Changes of Managed Object Context")
+                print("\(saveError), \(saveError.localizedDescription)")
+            }
+            
+            self.privateManagedObjectContext.perform {
+                do {
+                    if self.privateManagedObjectContext.hasChanges {
+                        try self.privateManagedObjectContext.save()
+                    }
+                } catch {
+                    let saveError = error as NSError
+                    print("Unable to Save Changes of Private Managed Object Context")
+                    print("\(saveError), \(saveError.localizedDescription)")
+                }
+            }
+        }
+    }
+    
+    // MARK: - Contexts
+    
+    private lazy var privateManagedObjectContext: NSManagedObjectContext = {
+        // Initialize Managed Object Context
+        var managedObjectContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        // Configure Managed Object Context
+        managedObjectContext.persistentStoreCoordinator = self.persistentContainer.persistentStoreCoordinator
+        return managedObjectContext
+    }()
+    private(set) lazy var mainManagedObjectContext: NSManagedObjectContext = {
+        let managedObjectContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+        managedObjectContext.parent = self.privateManagedObjectContext
+        return managedObjectContext
+    }()
+    
+    func backgroudChildContext() -> NSManagedObjectContext {
+        let managedObjectContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        managedObjectContext.parent = self.mainManagedObjectContext
+        return managedObjectContext
+    }
+
+    func saveNews(items news: [NewsFeedItem]) {
+        let bgContext = self.backgroudChildContext()
+        bgContext.perform {
+            news.forEach {
+                self.insertNewsObjectsFor(newsItem: $0, toContext: bgContext)
+            }
+            try! bgContext.save()
         }
     }
     
     func makeNewsRead(news: NewsFeedEntity) {
         news.isRead = true
-        self.saveContext()
+        self.saveMainContext()
     }
     
     func saveBody(_ body: String, forNews newsEntity: NewsItemEntity) {
         newsEntity.body =  body.data(using: .utf8)! as NSData
         newsEntity.isSaved = true
-        CoreDataManager.shared.saveContext()
+        saveMainContext()
     }
     
     private func insertNewsObjectsFor(newsItem: NewsFeedItem, toContext context: NSManagedObjectContext) {
@@ -74,51 +163,6 @@ class CoreDataManager {
         newsEntity.webURL   = newsItem.webUrl
         newsEntity.feedItem = newsFeedEntity
     
-    }
-    
-    // MARK: - Core Data stack
-    
-    lazy var persistentContainer: NSPersistentContainer = {
-        /*
-         The persistent container for the application. This implementation
-         creates and returns a container, having loaded the store for the
-         application to it. This property is optional since there are legitimate
-         error conditions that could cause the creation of the store to fail.
-         */
-        let container = NSPersistentContainer(name: "FeedApp")
-        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
-            if let error = error as NSError? {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                
-                /*
-                 Typical reasons for an error here include:
-                 * The parent directory does not exist, cannot be created, or disallows writing.
-                 * The persistent store is not accessible, due to permissions or data protection when the device is locked.
-                 * The device is out of space.
-                 * The store could not be migrated to the current model version.
-                 Check the error message to determine what the actual problem was.
-                 */
-                fatalError("Unresolved error \(error), \(error.userInfo)")
-            }
-        })
-        return container
-    }()
-    
-    // MARK: - Core Data Saving support
-    
-    func saveContext () {
-        let context = persistentContainer.viewContext
-        if context.hasChanges {
-            do {
-                try context.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nserror = error as NSError
-                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-            }
-        }
     }
     
 }

@@ -20,7 +20,7 @@ class NewsDetailViewController: UIViewController {
     var newsItem: NewsItemEntity! {
         didSet {
             newsItem.feedItem?.isRead = true
-            CoreDataManager.shared.saveContext()
+            CoreDataStack.shared.saveMainContext()
             // Update the view.
             if self.isViewLoaded {
                 configureView()
@@ -105,7 +105,7 @@ class NewsDetailViewController: UIViewController {
     
     @IBAction func pinButtonTapped(_ sender: UIBarButtonItem) {
         self.newsItem.feedItem?.isPinned = true
-        CoreDataManager.shared.saveContext()
+        CoreDataStack.shared.saveMainContext()
         sender.isEnabled = false
     }
     
@@ -163,7 +163,7 @@ class NewsDetailViewController: UIViewController {
                 print(error)
             case .success(with: let body):
                 let bodyString = body as! String
-                CoreDataManager
+                CoreDataStack
                     .shared
                     .saveBody(bodyString,
                               forNews: newsItem)
